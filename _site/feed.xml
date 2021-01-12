@@ -1,0 +1,885 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2021-01-11T23:47:47-06:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Sparkling Correlation</title><subtitle>On data, decisions, and causal thinking.</subtitle><entry><title type="html">Build a Neural Network with Julia</title><link href="http://localhost:4000/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html" rel="alternate" type="text/html" title="Build a Neural Network with Julia" /><published>2020-12-20T00:00:00-06:00</published><updated>2020-12-20T00:00:00-06:00</updated><id>http://localhost:4000/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network</id><content type="html" xml:base="http://localhost:4000/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html">&lt;h2 id=&quot;audience&quot;&gt;Audience&lt;/h2&gt;
+&lt;p&gt;If you’re reading this, I assume you are already motivated to learn how a neural network actually works. They are relevant and powerful tools, so the sell shouldn’t be too difficult anyway. There are many other excellent guides out there that I will link to below. If you find any mistakes or have comments, please email me or comment on this post.&lt;/p&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;I implement a feedforward, fully-connected neural network&lt;sup id=&quot;fnref:1&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; with stochastic gradient descent in the Julia programming language (terms are defined below). There are two main advantages of this setup:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;This architecture represents a neural network in it’s simplest &lt;em&gt;feasible&lt;/em&gt; form.&lt;sup id=&quot;fnref:2&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:2&quot; class=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt; Many other implementations, like convolutional or recurrant neural networks, are extensions of this base framework.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Julia is a fantastic language for learning this since it doesn’t distract from the math (i.e. matrix math is built in with convenient syntax), but still allows for powerful programming features that let us abstract from certain implementation details (i.e. using structs to create our own objects).&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Note, this is for educational purposes only: it is (hopefully) optimized for readability rather than speed or scalability. For a production grade neural network in Julia, check out Flux.jl.&lt;/p&gt;
+
+&lt;p&gt;The full code is available here:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/slee981/neural-network&quot;&gt;https://github.com/slee981/neural-network&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;components-and-definitions&quot;&gt;Components and Definitions&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Neural Network&lt;/strong&gt;: A sequence of mathematical operations, philosophically inspired by a model of the brain, and designed to iteratively improve it’s fit of historical data, while maintaining the ability to generalize to new, unseen data.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Layer&lt;/strong&gt;: A building block of a neural network that receives input, performs a basic linear (technically, affine) transformation, and passes the affine transformation through a non-linear “activation function” as it’s output.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Feedforward&lt;/strong&gt;: The forward process of receiving an input, and progressing through the network layer by layer until you reach the final output.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Fully-connected&lt;/strong&gt;: A type of neural network where each layer’s inputs are “connected” to the final output via it’s own potentially unique relationship i.e. no inputs are ignored, and no weights are systematically repeated.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Affine Transformation&lt;/strong&gt;: A geometric transformation that preserves lines and parallelism, but not necessarily distances and angles [source: Wikipedia]. For our use case, it is simply a transformation of the form \(z = Ax + b\). This technically differs from a linear transformation, since a linear transformation doesn’t have a “bias” component.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Activation Function&lt;/strong&gt;: A non-linear function applied element wise to a vector. Two common examples are the sigmoid and relu functions.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Loss Function&lt;/strong&gt;: A function that allows us to measure how well a predicted value matches the known “true” value. This is equivalently called a cost function or objective function.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Stochastic Gradient Descent&lt;/strong&gt;: An optimization process by which training a neural network is made feasible. Rather than calculating the true loss over the entire dataset before making a single update to our parameters, we only calculate the loss on a random subsample of the data and then update our weights accordingly. Emperically, this process is found to produce more general results as well as speed up the training process.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;big-picture&quot;&gt;Big Picture&lt;/h2&gt;
+&lt;p&gt;The goal of a neural network is to approximate a function, \(f(x)\), such that it is wrong as little as possible when it sees new data. We start with a training dataset containing \(N\) observations of \(k\) features (aka covariates), as well as \(N\) observations of some outcome that we will try to predict. For this exercise, I will ignore any use of a test dataset to focus on the math of the neural network.&lt;/p&gt;
+
+&lt;p&gt;We can conveniently store the features in an \(N\times k\) matrix called \(X\), and similarly store the outcomes in a matrix \(Y\). Thus, a length-\(k\) horizontal row vector \(x_i\) describes the features for observation \(i\) (for example, this could be a specific house, person, photo, or document depending on your data).&lt;/p&gt;
+
+&lt;p&gt;Visually, we can imagine this as follows:
+\(%katex
+f\Bigg(\begin{bmatrix}
+x_1 \\
+x_2 \\
+\vdots \\ 
+x_N
+\end{bmatrix} \Bigg) \approx \begin{bmatrix}
+y_1 \\
+y_2 \\
+\vdots \\ 
+y_N
+\end{bmatrix}\)&lt;/p&gt;
+
+&lt;h3 id=&quot;network&quot;&gt;Network&lt;/h3&gt;
+&lt;p&gt;Together, the neural network acts to:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;Receive an observation’s input, \(x_i\).&lt;/li&gt;
+  &lt;li&gt;Take a linear (technically, affine) transformation of the input features, i.e. \(Ax_i + b\).&lt;/li&gt;
+  &lt;li&gt;Pass the resulting vector into a “non-linear activation function”, i.e. \(w_l = \sigma(Ax_i + b)\).&lt;/li&gt;
+  &lt;li&gt;Use this output vector, \(w_l\), as the input to the next layer and repeat until you reach the last layer.&lt;/li&gt;
+  &lt;li&gt;Compare the last predicted output \(w_L\) to the observed target output \(y_i\) (using a loss function).&lt;/li&gt;
+  &lt;li&gt;Calculate the gradient of the loss function with respect to the weights you can control in each layer, i.e. all \(A\)’s and \(b\)’s.&lt;/li&gt;
+  &lt;li&gt;Update the weights in the direction of maximum change i.e. the &lt;em&gt;negative&lt;/em&gt; gradient. This is what the commonly used names backpropagation and gradient descent refer to.&lt;/li&gt;
+  &lt;li&gt;Repeat until satisfied.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Visually, we can represent the network as follows.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;images/NeuralNet.png&quot; alt=&quot;Neural Network&quot; title=&quot;Neural Network Diagram&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Note, this diagram is a bit different than the diagrams often shown. For me, this is more useful as it helps to internalize the fact that each layer is only performing basic math operations during the forward steps - no magic. Again, each layer will receive a vector of input, calculate a linear transformation (which returns another vector of possibly different length), pass each element of the new vector into a non-linear “activation” function, and then output that result to the next layer until there are no more layers.&lt;/p&gt;
+
+&lt;h3 id=&quot;activation&quot;&gt;Activation&lt;/h3&gt;
+&lt;p&gt;We apply a non-linear “activation” function to the result of the linear transformation in order to allow the neural network to capture non-linear relationships. Conceptually, it is that simple.&lt;/p&gt;
+
+&lt;p&gt;Two very common activation functions are sigmoid and relu, defined as follows:&lt;/p&gt;
+
+\[%katex
+\begin{aligned}
+\sigma_{sigmoid}(z) &amp;amp;= \frac{1}{1 + e^{-z}} \\ \\
+\sigma_{relu}(z) &amp;amp;= max(0, z)
+\end{aligned}\]
+
+&lt;p&gt;In this case, the activation function is applied element-wise to the linear transformation step, i.e.:&lt;/p&gt;
+
+\[%katex
+\begin{aligned}
+w_l &amp;amp;= \sigma(Ax + b) \\ 
+&amp;amp;= \sigma\Bigg( \begin{bmatrix}
+a_{11} &amp;amp; \ldots &amp;amp; a_{1N}  \\
+\vdots &amp;amp; \ddots &amp;amp; \vdots \\ 
+x_{m1} &amp;amp; \ldots &amp;amp; a_{1N} 
+\end{bmatrix} 
+\begin{bmatrix}
+x_1 \\
+x_2 \\
+\vdots \\ 
+x_N
+\end{bmatrix} + 
+\begin{bmatrix}
+b_1 \\
+\vdots \\ 
+b_m
+\end{bmatrix}
+\Bigg) \\
+&amp;amp;= \sigma\Bigg( \begin{bmatrix}
+z_1 \\
+\vdots \\ 
+z_m
+\end{bmatrix} \Bigg) \\
+&amp;amp;= \begin{bmatrix}
+w_1 \\
+\vdots \\ 
+w_m
+\end{bmatrix}
+\end{aligned}\]
+
+&lt;p&gt;Without the activation function, \(\sigma\), the resulting series of linear tranasformations could be simplified to just a single simple linear transformation: we would never be able to fit more complex relationships. To convince youself this is true, consider the following example of a hypothetical three (3) layer network without an activation function:&lt;/p&gt;
+
+\[%katex
+\begin{aligned} 
+\underbrace{A_3(\underbrace{A_2(\underbrace{A_1x_1 + b_1}_{\text{Layer 1}}) + b_2)}_{\text{Layer 2}} + b3}_{\text{Layer 3}} &amp;amp;= A_3 A_2 A_1 x_1 + A_3 A_2 b_1 + A_3 b_2 + b_3 \\ 
+&amp;amp;= A_sx_1 + b_s
+\end{aligned}\]
+
+&lt;p&gt;Where we let \(A_s = A_3 A_2 A_1\) and \(b_s = A_3 A_2 b_1 + A_3 b_2 + b_3\). This simplification will hopefully convince you that an \(L\) layer neural network without a non-linear activation function applied to each of the layers will ultimately reduce to the mathematical equilivant of a single linear transformation.&lt;/p&gt;
+
+&lt;p&gt;If you need additional convincing, this Julia code will reproduce the above relationship:&lt;/p&gt;
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;randn&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;A1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;randn&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;A2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;randn&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;A3&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;randn&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;b1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;randn&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;b2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;randn&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;b3&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;randn&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;As&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;A3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;A2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;A1&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;bs&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;A3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;A2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;b1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;A3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;b2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b3&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;full&lt;/span&gt;       &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;A3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;A2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;A1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b2&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b3&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;simplified&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;As&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bs&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;isapprox&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;full&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;simplified&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# true&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# note: becuase of floating point precision&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# the answers may be slightly different in the smallest decimal places&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# which is why I use `isapprox`.&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;loss&quot;&gt;Loss&lt;/h3&gt;
+&lt;p&gt;How do we evaluate success? Our neural network produces &lt;em&gt;some&lt;/em&gt; output, and we may want to know how good that output is. You will hear this concept referred to as, equivalently, loss, cost, or objective functions.&lt;/p&gt;
+
+&lt;p&gt;The idea is simple: provide a way to quantify how good our model fits the data. In practice, this involves penalizing deviations from the true labeled results. If our model guesses the answer should be 0.21 when we know the answer is 1, we want the loss (cost) to be larger than if it had guessed 0.85.&lt;/p&gt;
+
+&lt;p&gt;In this write-up, I use the mean-squared-error loss function (largely due to the symmetry with standard OLS regression). There are other resources with great primers on other common loss functions, so I won’t cover it here. The important part is that we want to minimize the loss - and to do that we use calculus.&lt;/p&gt;
+
+&lt;h3 id=&quot;backpropagation&quot;&gt;Backpropagation&lt;/h3&gt;
+&lt;p&gt;Once we have made a guess at what the answer should be, \(w_L\), we compare it to the target output \(y_i\) and realize it may not be exactly correct. In this case our cost (loss) function \(C\) will produce a larger value than we want. How do we adjust the numbers in each layer’s weight matrix \(A_l\) and “bias”&lt;sup id=&quot;fnref:3&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:3&quot; class=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt; vector \(b_l\), such that the value of loss function will decrease i.e. our predicted output will be closer to the target output? We take derivatives.&lt;/p&gt;
+
+&lt;p&gt;In math, what we want to know is this: what is the partial derivative of the loss function with respect to each of the numbers I can control i.e. the elements of each weight matrix \(A_l\) and the bias vectors \(b_l\). Put another way, we want to find:&lt;/p&gt;
+
+\[%katex
+\frac{\partial C}{\partial A_l} \, , \, \frac{\partial C}{\partial b_l}\]
+
+&lt;p&gt;For each layer \(l \in [1, L]\).&lt;/p&gt;
+
+&lt;p&gt;To do so, we use a technique commonly called “backpropagation”, and also known as “reverse mode differentiation”.&lt;sup id=&quot;fnref:4&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:4&quot; class=&quot;footnote&quot;&gt;4&lt;/a&gt;&lt;/sup&gt; In short, rather than start from the input value and start chaining deravitives until you get to the output, we start with the output and work backwards to the input. This way, in one pass, we find all the relevant deravitives we care about. Check out the footnote in this paragraph for an excellent introduction to the concept.&lt;/p&gt;
+
+&lt;p&gt;Thus, starting with the last layer, we find deravitives:&lt;/p&gt;
+
+\[%katex
+\begin{aligned}
+\frac{\partial C}{\partial A_L} &amp;amp;= \textcolor{blue}{\frac{\partial C}{\partial w_L}} \textcolor{red}{\frac{\partial w_L}{\partial z_L}} \textcolor{goldenrod}{\frac{\partial z_L}{\partial A_{L}}} \\ \\
+\frac{\partial C}{\partial b_L} &amp;amp;= \textcolor{blue}{\frac{\partial C}{\partial w_L}} \textcolor{red}{\frac{\partial w_L}{\partial z_L}} \textcolor{seagreen}{\frac{\partial z_L}{\partial b_{L}}} 
+\end{aligned}\]
+
+&lt;p&gt;It’s important to remember that we pick the relevant functions. So, for example, if we use a variant of the mean square error cost (loss) function we find&lt;/p&gt;
+
+\[%katex
+\begin{aligned}
+C &amp;amp;= \frac{1}{2}\sum_i (w_{Li} - y_i)^2  &amp;amp; \Leftarrow \text{Cost function} \\ 
+\textcolor{blue}{\frac{\partial C}{\partial w_{Li}}} &amp;amp;= \textcolor{blue}{w_{Li} - y_i} &amp;amp; \Leftarrow \text{Vector}
+\end{aligned}\]
+
+&lt;p&gt;Note that when our target \(y_i\) is a vector instead of a scalar (e.g. for a categorical problem), we often choose a method of aggregating the losses for each element of that vector. In the Google framework Tensorflow, for example, they call this a reduction.&lt;sup id=&quot;fnref:5&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:5&quot; class=&quot;footnote&quot;&gt;5&lt;/a&gt;&lt;/sup&gt; The main reason for this is that it simplifies the math and calculations significantly. This simplification only applies to the reported “cost” (loss) value itself, not the derivative, however, which can remain a vector.&lt;/p&gt;
+
+&lt;p&gt;We can calculate the other necessary partial derivatives as well.&lt;/p&gt;
+
+\[%katex
+\begin{aligned}
+w_L &amp;amp;= \sigma\big(\underbrace{A_L w_{L-1} + b_L}_{z_L} \big) \\
+&amp;amp;= \sigma(z_L ) \\ \\
+\textcolor{red}{\frac{\partial w_L}{\partial z_{L}}} &amp;amp;= \textcolor{red}{\sigma'(z_L)} &amp;amp; \Leftarrow \text{Matrix} \\
+\textcolor{goldenrod}{\frac{\partial z_L}{\partial A_{L}}} &amp;amp;= \textcolor{goldenrod}{w_{L-1}} &amp;amp; \Leftarrow \text{Vector} \\
+\textcolor{seagreen}{\frac{\partial z_L}{\partial b_{L}}} &amp;amp;= \textcolor{seagreen}{1}
+\end{aligned}\]
+
+&lt;p&gt;We can now put these values together to find our first relevant gradients (rearranging to fit the necessary geometry for matrix algebra):&lt;/p&gt;
+
+\[%katex
+\begin{aligned}
+\frac{\partial C}{\partial A_L} &amp;amp;= \textcolor{red}{\sigma'(z_L)} \textcolor{blue}{\bigg(w_{Li} - y_i\bigg)} \textcolor{goldenrod}{(w_{L-1})^T} \\ \\
+\frac{\partial C}{\partial b_L} &amp;amp;= \textcolor{red}{\sigma'(z_L)} \textcolor{blue}{\bigg(w_{Li} - y_i\bigg)} \textcolor{seagreen}{(1)} 
+\end{aligned}\]
+
+&lt;p&gt;More generally, using the chain rule, we can calculate the gradient for any layer as follows:&lt;/p&gt;
+
+\[%katex
+\begin{aligned}
+\frac{\partial C}{\partial A_l} &amp;amp;= \textcolor{blue}{\frac{\partial C}{\partial w_L}} \textcolor{red}{\frac{\partial w_L}{\partial z_L}} \textcolor{violet}{\frac{\partial z_L}{\partial w_{L-1}}} \ldots \frac{\partial z_l}{\partial A_l} \\ \\
+\frac{\partial C}{\partial b_l} &amp;amp;= \textcolor{blue}{\frac{\partial C}{\partial w_L}} \textcolor{red}{\frac{\partial w_L}{\partial z_L}} \textcolor{violet}{\frac{\partial z_L}{\partial w_{L-1}}} \ldots \frac{\partial z_l}{\partial b_l}
+\end{aligned}\]
+
+&lt;p&gt;Actual implementations of these calculations can be found in the code below.&lt;/p&gt;
+
+&lt;h3 id=&quot;stochastic-gradient-descent&quot;&gt;Stochastic Gradient Descent&lt;/h3&gt;
+&lt;p&gt;Once we calculate how each of the numbers in our weights and biases impact the ultimate cost function, we need to decide how to update them such that the overall cost will decrease next time. For this, we use gradient descent. You may recall that the gradient points in the positive direction of maximum slope i.e. the gradient tells us, for a particular point in the space, which direction will a given change have the maximum impact. Since we are trying to minimize the cost function, we want to move in the &lt;em&gt;negative&lt;/em&gt; direction of the same gradient vector: hence, gradient &lt;em&gt;descent&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;Since the gradient of the cost function is defined for the entire sample of \(N\) observations, in theory, we should have to do a forward pass of each data point in order to calculate the “true” loss. For large datasets, which we need for this type of machine learning, this becomes infeasible as you would need thousands and thousands of passes through the dataset.&lt;/p&gt;
+
+&lt;p&gt;Stochastic gradient descent is a heuristic solutions to this problem. Rather than calcualte the gradient of the cost function over the entire (training) dataset, we sample from our data and calculate the gradient over that subsample. This subsample can be as small as a single observation, and often isn’t more than 32 rows of data (i.e. observations).&lt;/p&gt;
+
+&lt;p&gt;Once we have our gradient, we update the weights according to some rule. The simplest takes the form:&lt;/p&gt;
+
+\[%katex
+u_{t+1} = u_t - \eta \nabla C(u_t)\]
+
+&lt;p&gt;Where \(u_{t+1}\) is the updated weight or bias, \(\eta\) acts as a scale for the update and is referred to as the step size or learning rate, and \(\nabla C(u_t)\) is the (stochastic) gradient of the cost function evaluated at the original point \(u_t\). To solidify this concept, we can imagine the gradient of the cost function looks something like:&lt;/p&gt;
+
+\[%katex
+\nabla C(A_L, b_L, ..., A_1, b_1) = \begin{bmatrix}
+\frac{\partial C}{\partial A_L} \\ \\
+\frac{\partial C}{\partial b_L} \\
+\vdots \\
+\frac{\partial C}{\partial A_1} \\ \\
+\frac{\partial C}{\partial b_1} \\
+\end{bmatrix}\]
+
+&lt;p&gt;Recalling, that the partial derivatives are calculated as above for each of the elements in the weight matricies \(A_l\) and bias vectors \(b_l\) for \(l \in [1, L]\). This is to say that, practically, we are calculating these elements backward from the last layer to the first layer&lt;/p&gt;
+
+\[%katex
+\begin{aligned}
+    a_{L(t+1)} &amp;amp;= a_{Lt} - \eta \frac{\partial C}{\partial A_L} \\ \\
+    b_{L(t+1)} &amp;amp;= b_{Lt} - \eta \frac{\partial C}{\partial b_L} \\ 
+    &amp;amp;\,\,\, \vdots \\
+    a_{1(t+1)} &amp;amp;= a_{1t} - \eta \frac{\partial C}{\partial A_1} \\ \\
+    b_{1(t+1)} &amp;amp;= b_{1t} - \eta \frac{\partial C}{\partial b_1} \\ 
+\end{aligned}\]
+
+&lt;h2 id=&quot;implementation&quot;&gt;Implementation&lt;/h2&gt;
+&lt;p&gt;We can implement the above with the Julia programming language. Ultimately, our goal is to call a neural network with the following interface:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;net&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Network&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;inputdim&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;input_size&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cost&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loss_mse&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dcost&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dloss_mse&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;addlayer!&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;64&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relu&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;drelu&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;addlayer!&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;32&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relu&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;drelu&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;addlayer!&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;output_size&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;softmax&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dsoftmax&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; 
+
+&lt;span class=&quot;c&quot;&gt;# fit network - stochastic gradient descent &lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;fit!&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;X_train&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Y_train&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;batchsize&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;16&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;epochs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;learningrate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.01&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Note, we will begin by defining the neural network with an input dimmension i.e. the length of each input vector. Subsequently, we add layers to the network by defining the size of the layer’s output, the activation function, and the derivative of the activation function&lt;sup id=&quot;fnref:6&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:6&quot; class=&quot;footnote&quot;&gt;6&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;network-1&quot;&gt;Network&lt;/h3&gt;
+&lt;p&gt;First, we define a new “struct” in Julia, called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Network&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;mutable struct&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt; Network&lt;/span&gt; 
+    &lt;span class=&quot;n&quot;&gt;inputdim&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Int16&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;layers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Vector&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Layer&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;cost&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Function&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;dcost&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Function&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;# constructor&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt; Network&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;inputdim&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cost&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dcost&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;  
+        &lt;span class=&quot;n&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;inputdim&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Layer&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;}[],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cost&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dcost&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Julia notes:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mutable struct ...&lt;/code&gt;. If you’re unfamiliar with a “struct”, it’s a rather simple, but powerful, concept that shows up in other programming languages like C/C++ and Go. The idea is to group variables together in a way that is meaningful to the programmer or reader. With this, we can now create one or many new &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Network&lt;/code&gt;s and access the components with “dot” notation e.g. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;net.layers&lt;/code&gt;. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mutable&lt;/code&gt; keywork just allows us to modify the elements of the struct throughtout the program - by default, structs in Julia are immutable, and values don’t change after they are first created.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;var::Type&lt;/code&gt;. Julia allows for “type annotation”, which we’ll use define each variable a bit more precicely. In this case, the advantage is mostly for readability, and so that we know as best as possible what is happening each step of the way in our netural network. For example, when we see &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;inputdim::Int16&lt;/code&gt;, it is simply saying that our network has a variable called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;inputdim&lt;/code&gt; that is a 16-bit integer. Similarly, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cost::Function&lt;/code&gt; tells us (and the complier) to expect a function for the variable cost.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;function Network(;inputdim, cost, dcost)&lt;/code&gt;. This is our “constructor”. It tells the compiler (and the programmer) how to create a new &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Network&lt;/code&gt;. For example, despite our &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Network&lt;/code&gt; having four internal variables, we create a new network with only three input arguments (because we don’t have any layers yet). One final note - the semicolon “;” before &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;inputdim&lt;/code&gt; forces us to explicitly declare the variable we’re setting, rather than rely on the position. So we can create a new network with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;net = Network(inputdim=4, cost=mse, dcost=dmse)&lt;/code&gt;, but if we try to say &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;net = Network(4, mse, dmse)&lt;/code&gt; the compiler will throw an error. This is a design choice by me, feel free to remove it for your use.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;layer&quot;&gt;Layer&lt;/h3&gt;
+&lt;p&gt;Next, we define a new struct for each Layer:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;mutable struct&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt; Layer&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;weights&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;AbstractArray&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;bias&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;AbstractArray&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;# each layer can have its own activation function&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;activation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Function&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;dactivation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Function&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;# cache &lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;# 1- the last linear transformation: z = Ax + b&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;# 2- activated output: w = activation(z) &lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;linear_out&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;AbstractArray&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;activated_out&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;AbstractArray&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;# keep track of partial derivative error for each batch &lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;dC_dlinear&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;AbstractArray&lt;/span&gt; 
+    &lt;span class=&quot;n&quot;&gt;dC_dweights&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;AbstractArray&lt;/span&gt; 
+    &lt;span class=&quot;n&quot;&gt;dC_dbias&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;AbstractArray&lt;/span&gt; 
+
+    &lt;span class=&quot;c&quot;&gt;# constructor&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt; Layer&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;insize&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Number&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; 
+        &lt;span class=&quot;n&quot;&gt;outsize&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Number&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; 
+        &lt;span class=&quot;n&quot;&gt;activation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Function&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; 
+        &lt;span class=&quot;n&quot;&gt;dactivation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Function&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+
+        &lt;span class=&quot;c&quot;&gt;# the Glorot normal initializer, also called Xavier normal initializer&lt;/span&gt;
+        &lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
+        &lt;span class=&quot;c&quot;&gt;# reference: &lt;/span&gt;
+        &lt;span class=&quot;c&quot;&gt;# https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/keras/initializers/initializers_v2.py&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;sigma_sq&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;insize&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;outsize&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;weights&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;randn&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;outsize&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;insize&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sigma_sq&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;bias&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;randn&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;outsize&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sigma_sq&lt;/span&gt;
+
+        &lt;span class=&quot;n&quot;&gt;linear_out&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;outsize&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;activated_out&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;outsize&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+
+        &lt;span class=&quot;n&quot;&gt;dC_dlinear&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;outsize&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;dC_dweights&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;outsize&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;insize&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;dC_dbias&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;outsize&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;weights&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bias&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;activation&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dactivation&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;linear_out&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;activated_out&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dC_dlinear&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dC_dweights&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dC_dbias&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Julia note:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Similar to the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Network&lt;/code&gt; above, we create a new mutable struct to represent a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Layer&lt;/code&gt;. One practical note is that we use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AbstractArray&lt;/code&gt; because it allows us to set those variables as either a one-dimensional vector, or two-dimensional matrix. This works because of type inheritance, which is worth reading about in the official Julia documentation.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Network note:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Each layer will store information about it’s current weights and biases, as well as it’s activation function and the derivative.&lt;/li&gt;
+  &lt;li&gt;Additionally, each layer will store some values for the backpropagation step. Namely, we will keep track of the last output for both the linear and “activated” vectors, as well as the running total of the various relevant partial derivatives i.e. the partial derivative of the cost (loss) function with respect to the linear transformation \(z\), the weights \(A\), and the bias vector \(b\).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;initializing-the-layer&quot;&gt;Initializing the Layer&lt;/h4&gt;
+&lt;p&gt;When we create a new layer, we need to make a decision about how to initialize the weights and bias. Zeros are not a good choice, because our first forward passes will be uninteresting (the result is the same for all input), and it will be difficult to update during backpropagation. Thus, we want to initialize the weights and bias with some random component, the specifics of which we follow the default setting in Google’s Tensorflow and use a so-called Glorot normal. This process basically allows us to initialize the weights and bias from a normal distribution with mean zero, and a variance that depends on the size of the inputs and outputs.&lt;/p&gt;
+
+&lt;p&gt;Besides that, we set all of the “cache” values equal to zeros, since they will be calculated in due time.&lt;/p&gt;
+
+&lt;h3 id=&quot;feedforward&quot;&gt;Feedforward&lt;/h3&gt;
+&lt;p&gt;For each step, we need to make a forward pass of the network, which is a fancy way of saying we need to take an input \(x\) and transform it to an output \(w_L\).&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt; feedforward!&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Network&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;input&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;AbstractArray&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;AbstractArray&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;nlayers&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;layers&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;lastoutput&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;input&lt;/span&gt; 
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nlayers&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;layers&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt;
+
+        &lt;span class=&quot;c&quot;&gt;# linear_out: z = Ax + b &lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;linear_out&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;weights&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lastoutput&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bias&lt;/span&gt;
+
+        &lt;span class=&quot;c&quot;&gt;# activated_output: w = activation(Ax + b)&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;activated_out&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;activation&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;linear_out&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+
+        &lt;span class=&quot;c&quot;&gt;# update for the next input&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;lastoutput&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;activated_out&lt;/span&gt; 
+    &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;# w_L&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lastoutput&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This code should be pretty simple: starting with the input, for each layer in the network, calculate the linear transformation \(z = Ax + b\), the activated transformation \(w = \sigma(z)\), and then use the previous layer’s output as input to the next layer.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Julia note:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;By convention, when a function can modify the element it’s being passed, we include an exclaimation mark “!” at the end of the function i.e. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;feedforward!&lt;/code&gt; as opposed to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;feedforward&lt;/code&gt;. This is related to a paradigm called “pass by reference” in which you allow the function to modify the actual object you passed it. In contrast, “pass by value” will make a copy of the object’s value, do some operation, and return a new value. Both are useful, and Julia allows for both. In this case, we want these functions to directly update the actual network.&lt;/li&gt;
+  &lt;li&gt;Additionally, just like type annotation with variables, in Julia we can give the compiler (and the programmer) a hint that this function returns a value of type &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AbstractArray&lt;/code&gt;. We signify that by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;fctname()::ReturnType&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;backpropagation-1&quot;&gt;Backpropagation&lt;/h3&gt;
+&lt;p&gt;Based on our understanding with the big picture above, backpropagation is perhaps more aptly named “calculate partial derivatives”. One key note is that we will keep a running total of the partial derivatives for each input until we are ready to actually use them to update the weights and bias. The batch size of our stochastic gradient descent will tell us how many inputs the network will “see” before updating the weights.&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt; backpropagate!&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Network&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;AbstractArray&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;truth&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;AbstractArray&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;# calculate last layer partials &lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;lastlayer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;layers&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;lastlayer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dC_dlinear&lt;/span&gt;   &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lastlayer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dactivation&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lastlayer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;linear_out&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dcost&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lastlayer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;activated_out&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;truth&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;lastlayer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dC_dweights&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lastlayer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dC_dlinear&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;layers&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;activated_out&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;'&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;lastlayer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dC_dbias&lt;/span&gt;    &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lastlayer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dC_dlinear&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;# iterate through previous layer partials&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;# note arrays are indexed at 1, not 0&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;layers&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;     &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;layers&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt;      &lt;span class=&quot;c&quot;&gt;# layer &quot;l&quot;&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;nextlayer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;layers&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt;  &lt;span class=&quot;c&quot;&gt;# nextlayer &quot;l + 1&quot;&lt;/span&gt;
+
+        &lt;span class=&quot;c&quot;&gt;# select the output of the previous layer&lt;/span&gt;
+        &lt;span class=&quot;c&quot;&gt;# note, for the first layer this will be the original input, xi&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;layers&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;prevlayer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;layers&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;prevout&lt;/span&gt;   &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;prevlayer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;activated_out&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;elseif&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;layers&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;prevout&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+
+        &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dC_dlinear&lt;/span&gt;   &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dactivation&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;linear_out&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nextlayer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;weights&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nextlayer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dC_dlinear&lt;/span&gt; 
+        &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dC_dweights&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dC_dlinear&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;prevout&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;'&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dC_dbias&lt;/span&gt;    &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dC_dlinear&lt;/span&gt; 
+    &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;stochastic-gradient-descent-1&quot;&gt;Stochastic Gradient Descent&lt;/h3&gt;
+&lt;p&gt;Putting it all together, our stochastic gradient descent step breaks the input data into separate batches, and performs the forward pass, the backpropagation, and updates the weights according to the batch size. Together, we see:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt; sgd!&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Network&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; 
+    &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;AbstractArray&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; 
+    &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;AbstractArray&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; 
+    &lt;span class=&quot;n&quot;&gt;batchsize&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Number&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; 
+    &lt;span class=&quot;n&quot;&gt;epochs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Number&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; 
+    &lt;span class=&quot;n&quot;&gt;learningrate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Number&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;# stochastic gradient descent (sgd)&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;# input vars&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;nobs&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nvars&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;# how many times do we go through the dataset? &lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;epoch&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;epochs&lt;/span&gt;
+
+        &lt;span class=&quot;c&quot;&gt;# shuffle rows of matrix  &lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;shuffledrows&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;shuffle&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nobs&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shuffledrows&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shuffledrows&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt;
+
+        &lt;span class=&quot;c&quot;&gt;# track average losses for each sample in batch&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;losses&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Vector&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Number&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;}();&lt;/span&gt;
+
+        &lt;span class=&quot;c&quot;&gt;# create mini batches and loop through each batch &lt;/span&gt;
+        &lt;span class=&quot;c&quot;&gt;# note: julia is NOT zero indexed &lt;/span&gt;
+        &lt;span class=&quot;c&quot;&gt;#       i.e. x[1] is the first element&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;batchend&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;batchsize&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;batchsize&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nobs&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;batchstart&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;batchend&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;batchsize&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+
+            &lt;span class=&quot;c&quot;&gt;# get sample of rows i.e. observations &lt;/span&gt;
+            &lt;span class=&quot;c&quot;&gt;# and transpose into columns for feedforward&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;xbatch&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;batchstart&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;batchend&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;'&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;ybatch&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;batchstart&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;batchend&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;'&lt;/span&gt;
+
+            &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;icol&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;batchsize&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;xi&lt;/span&gt;    &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;xbatch&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;icol&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;icol&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;ytrue&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ybatch&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;icol&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;icol&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt;
+
+                &lt;span class=&quot;c&quot;&gt;# feedforward&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;out&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;feedforward!&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;xi&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+
+                &lt;span class=&quot;c&quot;&gt;# calculate loss and store for tracking progress&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;iloss&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cost&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;out&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ytrue&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;push!&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;losses&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;iloss&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+
+                &lt;span class=&quot;c&quot;&gt;# calculate partial derivatives of each weight and bias&lt;/span&gt;
+                &lt;span class=&quot;c&quot;&gt;# i.e. backpropagate&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;backpropagate!&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;xi&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ytrue&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+
+            &lt;span class=&quot;c&quot;&gt;# update weights and bias &lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;update!&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;learningrate&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+
+        &lt;span class=&quot;c&quot;&gt;# sample average loss from batch to track progress&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;push!&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;epochlosses&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mean&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;losses&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;))&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;And note that each update step on the network adjusts the weights and biases as follows:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt; update!&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Network&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;learningrate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Number&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;# update weights in each layer based on the error terms dC_dweights, dC_dbias&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;layers&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;net&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;layers&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt;
+
+        &lt;span class=&quot;c&quot;&gt;# gradient descent step &lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;weights&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;learningrate&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dC_dweights&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bias&lt;/span&gt;    &lt;span class=&quot;o&quot;&gt;-=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;learningrate&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dC_dbias&lt;/span&gt;
+
+        &lt;span class=&quot;c&quot;&gt;# reset the error terms for next batch &lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;nrows&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ncols&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;weights&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+
+        &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dC_dlinear&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nrows&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dC_dweights&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nrows&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ncols&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;layer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dC_dbias&lt;/span&gt;    &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nrows&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;That concludes the basics. The full code is available here:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/slee981/neural-network&quot;&gt;https://github.com/slee981/neural-network&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;For me, the key takeaways from this exercise are:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;Neural networks are intricate combinations of math, but not magic.&lt;/li&gt;
+  &lt;li&gt;The complex layering of weights, biases, and activation functions makes interpretation very challenging, if not useless. This is to suggest that neural networks are fantastic at fitting data, but that reverse engineering &lt;em&gt;why&lt;/em&gt; or &lt;em&gt;how&lt;/em&gt; the neural network arrives at a given answer is beyond the scope of our current tool kit.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;The implications of this are to consider when a neural network is the right tool for the job, and when it might not be.&lt;/p&gt;
+
+&lt;p&gt;For example, I suspect many people would be uneasy with the Federal Reserve setting the interest rate based on predictions from a neural network. Rather, Reserve Bank presidents and their teams of researchers have an (implicit or explicit) responsibilty to &lt;em&gt;explain&lt;/em&gt; to congress, and the American people, why they made their decision. Much effort goes into these written and verbal explainations, and much effort occurs behind the scenes to estimate the implications of their decisions through the lens of cause and effect.&lt;/p&gt;
+
+&lt;p&gt;Alternatively, a neural network’s tremendous power at fitting patterns in data is perfectly geared to other problems, for example, image recognition for a search engine, or foreign language translation. In these cases, there is much less emphasis on &lt;em&gt;why&lt;/em&gt; and much more emphasis on &lt;em&gt;what&lt;/em&gt; or &lt;em&gt;which&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;Thus, these different questions we ask ourselves may require different tools: in some cases, prediction alone may not be all that we are after.&lt;/p&gt;
+
+&lt;h2 id=&quot;resources&quot;&gt;Resources&lt;/h2&gt;
+&lt;ol&gt;
+  &lt;li&gt;Learning From Data, Gilbert Strang: &lt;a href=&quot;http://math.mit.edu/~gs/learningfromdata/&quot;&gt;http://math.mit.edu/~gs/learningfromdata/&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Michael Nielsen’s “Neural Networks and Deep Learning”: &lt;a href=&quot;http://neuralnetworksanddeeplearning.com/&quot;&gt;http://neuralnetworksanddeeplearning.com/&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Blog post on computational graphs: &lt;a href=&quot;https://colah.github.io/posts/2015-08-Backprop/&quot;&gt;https://colah.github.io/posts/2015-08-Backprop/&lt;/a&gt;.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;footnotes&quot;&gt;Footnotes&lt;/h2&gt;
+&lt;div class=&quot;footnotes&quot; role=&quot;doc-endnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:1&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;In Keras, this is what you get when you setup a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Sequential&lt;/code&gt; model with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Dense&lt;/code&gt; layers. &lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:2&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;I emphasize feasible because the stochastic gradient descent is an optimization technique that approximates the gradient of the loss function over some subsample of the data. However, without this (or some) optimization, training the network would simply take too long to be useful. . &lt;a href=&quot;#fnref:2&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:3&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;Bias is a rather unfortunate naming convention for this vector. It might be more convenient to think of it as the intercept in the standard equation for a line \(y = ax + b\). This is, it should not really be associated with bias as we typically think of it i.e. a tendency to error in a particular way, but rather as a standard component of an affine transformation. &lt;a href=&quot;#fnref:3&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:4&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;For an excellent introduction to deravitives in computational graphs, see this link: https://colah.github.io/posts/2015-08-Backprop/. &lt;a href=&quot;#fnref:4&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:5&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;See code for various examples of how to “reduce” a vector of losses into a single number: https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/ops/losses/losses_impl.py. &lt;a href=&quot;#fnref:5&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:6&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;Frameworks like Flux.jl and Tensorflow implement some type of autograd system that can handle the differentiation step without explictly passing the derivative function. For the sake of this tutorial, explicitly writing out a few derivatives is both helpful and simpler. &lt;a href=&quot;#fnref:6&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;</content><author><name>Stephen Lee</name></author><category term="machine learning" /><category term="prediction" /><category term="tutorial" /><summary type="html">Audience If you’re reading this, I assume you are already motivated to learn how a neural network actually works. They are relevant and powerful tools, so the sell shouldn’t be too difficult anyway. There are many other excellent guides out there that I will link to below. If you find any mistakes or have comments, please email me or comment on this post.</summary></entry><entry><title type="html">Stata</title><link href="http://localhost:4000/2020/10/20/stata.html" rel="alternate" type="text/html" title="Stata" /><published>2020-10-20T00:00:00-05:00</published><updated>2020-10-20T00:00:00-05:00</updated><id>http://localhost:4000/2020/10/20/stata</id><content type="html" xml:base="http://localhost:4000/2020/10/20/stata.html">&lt;h2 id=&quot;overview&quot;&gt;Overview&lt;/h2&gt;
+
+&lt;p&gt;In STATA, it’s good practice to estimate your OLS model with “robust” standard errors. For example, in STATA you type:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-stata&quot;&gt;reg y x1 x2, r
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And magic happens.&lt;/p&gt;
+
+&lt;p&gt;As it turns out, it’s not &lt;em&gt;complete&lt;/em&gt; magic - it’s math. This post will recreate the robust standard error calculation using the free MATLAB clone, Octave. I’ll compare it to the same regressions run in STATA to verify.&lt;/p&gt;
+
+&lt;p&gt;TLDR: &lt;a href=&quot;https://github.com/slee981/calculate-ols-robust-errors&quot;&gt;Here&lt;/a&gt; is a link to the full code to replicate yourself.&lt;/p&gt;
+
+&lt;h2 id=&quot;problem&quot;&gt;Problem&lt;/h2&gt;
+
+&lt;p&gt;I’m going to assume that you have at least some basic familiarity with OLS regression or are learning about it right now. The setup is this: you have an outcome variable, Y, and some predictors, X (a.k.a. covariates, dependent variables), and you want to know which predictors are relevant to predict Y.&lt;/p&gt;
+
+&lt;p&gt;In order for the OLS to be the Best Linear Unbiased Estimator (BLUE), we need to believe - or assume - certain things about the “True” data generating process (DGP).&lt;/p&gt;
+
+&lt;p&gt;From Wooldridge, these are:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Linear in parameters.&lt;/li&gt;
+  &lt;li&gt;Randomly sampled.&lt;/li&gt;
+  &lt;li&gt;There must be some variation in the dependent variables i.e. they can’t all be the same value.&lt;/li&gt;
+  &lt;li&gt;Zero conditional mean for the error term i.e. the expectation for the error should be zero, conditional on any values of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;X&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;Homoskedastic errors i.e. all errors come from the same distribution.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;But what if we think the errors are not homoskedastic? In 1980, the economist Halbert White proposed a method for adjusting the standard errors to account for this possiblity.&lt;/p&gt;
+
+&lt;h3 id=&quot;why-do-we-care&quot;&gt;Why do we care?&lt;/h3&gt;
+&lt;p&gt;These standard errors are an input to the standard t-test, and therefore directly impact the interpretation of our point estimates for each parameter. If we don’t make this adjustment, we may draw incorrect conclusions about a variable’s importance.&lt;/p&gt;
+
+&lt;h2 id=&quot;data&quot;&gt;Data&lt;/h2&gt;
+
+&lt;p&gt;The first step is to make a good simulation dataset.&lt;/p&gt;
+
+&lt;h3 id=&quot;what-we-want&quot;&gt;What we want&lt;/h3&gt;
+&lt;ol&gt;
+  &lt;li&gt;A known “true” data generating process (DGP) so we can compare our results to the truth.&lt;/li&gt;
+  &lt;li&gt;Heteroskedastic deviations from the “truth” i.e. a given error’s variance depends on the observed independent variables.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;how-we-make-it&quot;&gt;How we make it&lt;/h3&gt;
+&lt;p&gt;Ultimately, we will want to estimate a least-squared-error solution to:&lt;/p&gt;
+
+\[Y = X\beta\]
+
+&lt;p&gt;Here, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Y&lt;/code&gt; is an &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N x 1&lt;/code&gt; column vector, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;X&lt;/code&gt; is an &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N x K&lt;/code&gt; matrix, and β is a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;K x 1&lt;/code&gt; vector. For the simulation, I’ll use 20 observations (i.e. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N = 20&lt;/code&gt;), and three independent variables, including the constant / intercept (i.e. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;K = 3&lt;/code&gt;). The code for this is:&lt;/p&gt;
+
+&lt;div class=&quot;language-matlab highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;                       &lt;span class=&quot;c1&quot;&gt;% e.g. &quot;time&quot; trend&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;x2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;round&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;randn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;     &lt;span class=&quot;c1&quot;&gt;% e.g. random variable&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;ones&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;                   &lt;span class=&quot;c1&quot;&gt;% the intercept &lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x2&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Next, we want to generate a vector of heteroskedastic errors i.e. the variance of the error changes, conditional on &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;X&lt;/code&gt;. I do this as follows:&lt;/p&gt;
+
+&lt;div class=&quot;language-matlab highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;u&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;randn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt;     &lt;span class=&quot;c1&quot;&gt;% randn ~ N(0, 1) so multiply by x1&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Note that use of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.*&lt;/code&gt; does element wise multiplication instead of matrix multiplication. In MATLAB and Octave, the same hold for any other operator e.g. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.^ &lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;./ &lt;/code&gt;, etc. This multiplication ensures that the population variance changes, conditional on &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Finally we are ready to make our outcome variable, y. We will use the “true” data generating process (DGP) of:&lt;/p&gt;
+
+\[y_i = 2 + 4x_{1i} - 3x_{2i}\]
+
+&lt;p&gt;We do this in code, and add our heteroskedastic errors as follows:&lt;/p&gt;
+
+&lt;div class=&quot;language-matlab highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;truth&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;Y&lt;/span&gt;     &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;truth&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;u&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;             &lt;span class=&quot;c1&quot;&gt;% truth with errors&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We save this, and will use it going forward.&lt;/p&gt;
+
+&lt;h2 id=&quot;solution&quot;&gt;Solution&lt;/h2&gt;
+
+&lt;h3 id=&quot;point-estimates&quot;&gt;Point estimates&lt;/h3&gt;
+&lt;p&gt;We want to find coefficients that minimize the mean-squared-error. This is akin to saying we want coefficients that, on average, miss by as little as possible. In matrix notation we can say&lt;/p&gt;
+
+\[min (Y - X\beta)' (Y - X\beta)\]
+
+&lt;p&gt;One way to solve this is to take the derivative with respect to β, and solve for β.&lt;sup id=&quot;fnref:1&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; Doing so yields:&lt;/p&gt;
+
+\[\beta = (X' X)^{-1} (X'Y)\]
+
+&lt;p&gt;In MATLAB / Octave code, this takes the following form:&lt;/p&gt;
+
+&lt;div class=&quot;language-matlab highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;betas&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;inv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;' * X) * (X'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;These will be our point estimates in a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;K x 1&lt;/code&gt; column vector.&lt;/p&gt;
+
+&lt;h3 id=&quot;variance&quot;&gt;Variance&lt;/h3&gt;
+&lt;p&gt;We may wonder how confident we can be in those estimates. How precise are they? The “standard” way to estimate the standard error is to assume that all the “true” errors come from the same distribution (with the same variance). In this case we have residuals given by:&lt;/p&gt;
+
+\[u = Y - X\beta\]
+
+&lt;p&gt;And, under the &lt;strong&gt;homoskedastic&lt;/strong&gt; error assumption, the variance is given by:&lt;/p&gt;
+
+\[V(u_i | x_i) = E(u^2_i | x_i) = \sigma^2\]
+
+&lt;p&gt;Whereas, under &lt;strong&gt;heteroskedastic&lt;/strong&gt; errors, we assume:&lt;/p&gt;
+
+\[V(u_i | x_i) = E(u^2_i | x_i) = \sigma^2_i\]
+
+&lt;p&gt;Note that in this case, the variance of the error term can change with the values of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;: in other words, knowing &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; tells you something about how much you might miss by. If we think this is likely the case, we use the “robust” error calculation that follows.&lt;/p&gt;
+
+&lt;h3 id=&quot;asymptotic-properties&quot;&gt;Asymptotic Properties&lt;/h3&gt;
+&lt;p&gt;Following certain “nice” assumptions,&lt;sup id=&quot;fnref:2&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:2&quot; class=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt; the estimates for β can be shown to come from the following asymptotic distribution:&lt;/p&gt;
+
+\[\hat{\beta}_{OLS} \sim N \bigg(\beta, (X' X)^{-1} X' \Omega X (X' X)^{-1} \bigg)\]
+
+&lt;p&gt;Where Ω represents the variance-covariance matrix of the error terms. If the errors are homoskedastic, then we can let:&lt;/p&gt;
+
+\[\Omega = \sigma^2I\]
+
+&lt;p&gt;In practice, we can replace the theoretical population variance with the sum of the squared residuals, divided by the degrees of freedom. In code, this is:&lt;/p&gt;
+
+&lt;div class=&quot;language-matlab highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;% find residuals &lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;resid&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Y&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;X&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;betas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; 
+
+&lt;span class=&quot;c1&quot;&gt;% how many variables? need for degrees of freedom&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;k&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; 
+
+&lt;span class=&quot;c1&quot;&gt;% homoskedastic variance&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;s2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resid&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.^&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;stdVar&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;s2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;inv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;% take element wise square-root to get error, &lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;% only keep diagonal elements&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;stdErr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;diag&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;stdVar&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.^&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;However, if the errors are heteroskedastic, then we have to allow the diagonal elements of Ω to differ. In this case, White (1980) proposed to estimate it using the square of the estimated residuals.&lt;/p&gt;
+
+&lt;p&gt;In this case, our code becomes:&lt;/p&gt;
+
+&lt;div class=&quot;language-matlab highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;% take squared residuals and place in diagonal &lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;omega&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;diag&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resid&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.^&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;% calcualte adjusted &quot;white&quot; variance&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;whiteVar&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;inv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'*X) * X'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;omega&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;inv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;'*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;/(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;% keep only the diagonal elements and take square-root &lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;whiteErr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;diag&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;whiteVar&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.^&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;You might be wondering where the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n/(n-k)&lt;/code&gt; came from - and that’s very observant of you! According to Cameron and Trivedi&lt;sup id=&quot;fnref:3&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:3&quot; class=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt;, this convention to adjust by the degrees of freedom has limited theoretical basis, and is used out of convention and because simulation shows it works well. Go figure.&lt;/p&gt;
+
+&lt;p&gt;And we’re done! This code produces OLS estimates, standard errors, and “robust” standard errors that are consistent with STATA.&lt;/p&gt;
+
+&lt;h2 id=&quot;verify-with-stata&quot;&gt;Verify with STATA&lt;/h2&gt;
+
+&lt;p&gt;Now to the big question: does it work? See for yourself:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://sparklingcorrelation.com/wp-content/uploads/2020/09/Screen-Shot-2020-09-17-at-10.14.57-PM.png&quot; alt=&quot;stata-results&quot; /&gt;
+&lt;img src=&quot;https://sparklingcorrelation.com/wp-content/uploads/2020/09/Screen-Shot-2020-09-17-at-10.10.30-PM.png&quot; alt=&quot;matlab-results&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;full-code-for-replication&quot;&gt;Full Code for Replication&lt;/h2&gt;
+
+&lt;p&gt;The full code is available &lt;a href=&quot;https://github.com/slee981/calculate-ols-robust-errors&quot;&gt;here&lt;/a&gt; on my GitHub for replication (and because it’s honestly easier to just see it all in one place and make sure it runs).&lt;/p&gt;
+
+&lt;div class=&quot;footnotes&quot; role=&quot;doc-endnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:1&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;Another way to think about it carries a more geometric interpretation and involves a projection operator into a space that is orthogonal to the column space of X. &lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:2&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;See Microeconometrics: Methods and Applications by Cameron and Trivedi for a more detailed description. &lt;a href=&quot;#fnref:2&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:3&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;Section 4.4.5. &lt;a href=&quot;#fnref:3&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;</content><author><name></name></author><summary type="html">Overview</summary></entry><entry><title type="html">Docker</title><link href="http://localhost:4000/2020/10/15/docker.html" rel="alternate" type="text/html" title="Docker" /><published>2020-10-15T00:00:00-05:00</published><updated>2020-10-15T00:00:00-05:00</updated><id>http://localhost:4000/2020/10/15/docker</id><content type="html" xml:base="http://localhost:4000/2020/10/15/docker.html">&lt;h3 id=&quot;introduction&quot;&gt;Introduction&lt;/h3&gt;
+
+&lt;p&gt;If you’re here, you either want to learn Docker, or find a better way to manage various programming languages and their versions.&lt;/p&gt;
+
+&lt;p&gt;For this use case, we explore Docker in the context of providing a “clean” way to install multiple versions of your favorite language (e.g. Python), or experiment with new languages that you don’t want to commit to installing directly on your machine.&lt;/p&gt;
+
+&lt;p&gt;Docker has many other cool use cases, but they are beyond the scope of this tutorial.&lt;/p&gt;
+
+&lt;p&gt;You can find the &lt;a href=&quot;https://github.com/slee981/docker-for-language-versions&quot;&gt;full code here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;download-docker&quot;&gt;Download Docker&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.docker.com/get-docker/&quot;&gt;Download here&lt;/a&gt; and follow the instructions.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.docker.com/engine/install/&quot;&gt;View supported platforms here&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;Note, if you are using Windows 10 with WSL2 enabled, be sure to follow those instructions. You still have to download the Windows 10 version of Docker Desktop - it will not work to try and install via your WSL2 terminal.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;create-dockerfile&quot;&gt;Create Dockerfile&lt;/h3&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;mkdir &lt;/span&gt;docker-python-example 
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;docker-python-example
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;touch &lt;/span&gt;Dockerfile
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Open this in your favorite text editor and add:&lt;/p&gt;
+
+&lt;div class=&quot;language-docker highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# Dockerfile &lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# image to start from&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;FROM&lt;/span&gt;&lt;span class=&quot;s&quot;&gt; python:3.9-buster &lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# explicitly set working directory &lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# this comes in handy later...&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;WORKDIR&lt;/span&gt;&lt;span class=&quot;s&quot;&gt; /usr/src&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# copy over files from local machine to docker&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;COPY&lt;/span&gt;&lt;span class=&quot;s&quot;&gt; requirements.txt .&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;COPY&lt;/span&gt;&lt;span class=&quot;s&quot;&gt; ./.bashrc /root/.bashrc&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# this base python:3.9-buster images is itself &lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# built on top of a Debian based Linux image &lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# so we update, upgrade, and install vim&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;RUN &lt;/span&gt;apt update &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\
+&lt;/span&gt;	apt &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; upgrade &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\
+&lt;/span&gt;	apt &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; vim
+
+&lt;span class=&quot;c&quot;&gt;# install any libraries you need&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;RUN &lt;/span&gt;pip &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; requirements.txt
+
+&lt;span class=&quot;c&quot;&gt;# open up a bash shell&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;CMD&lt;/span&gt;&lt;span class=&quot;s&quot;&gt; [&quot;bash&quot;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;A quick note about the logic above: Docker is built in layers, so the reason we separate out the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;RUN&lt;/code&gt; command that updates the operating system and installs vim from the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;RUN&lt;/code&gt; command the installs Python packages is that we may in the future want to add some Python packages. This ordering ensurs that the build will only need to redo that particlar layer (i.e. step), and not the entire thing. Alternatively, if we are unsure of what pacakges we want in this Docker environment, we could list each pip install on a separate &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;RUN&lt;/code&gt; layer (appended to the bottom, always just before the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;CMD&lt;/code&gt; layer). This will ensure quicker builds in the future.&lt;/p&gt;
+
+&lt;p&gt;Here is a link to &lt;a href=&quot;https://docs.docker.com/develop/develop-images/dockerfile_best-practices/&quot;&gt;best practices&lt;/a&gt;  for creating a Dockerfile, and here is a link to &lt;a href=&quot;https://hub.docker.com/_/python&quot;&gt;Python’s page on Docker Hub&lt;/a&gt;. You can find other versions of Python here, or explore other images to build upon.&lt;/p&gt;
+
+&lt;h3 id=&quot;build-dockerfile&quot;&gt;Build Dockerfile&lt;/h3&gt;
+
+&lt;p&gt;This step builds your Dockerfile “recipe” into a local image and gives it a “tag” or label called “python3.9”. Don’t forget the “.”! It tells Docker where to look for the Dockerfile.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker build &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; python3.9 &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;run-dockerfile&quot;&gt;Run Dockerfile&lt;/h3&gt;
+
+&lt;p&gt;Once this builds, you are ready to run!&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker run &lt;span class=&quot;nt&quot;&gt;-it&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$PWD&lt;/span&gt;:/usr/src python3.9 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Some notes on the flags:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-it&lt;/code&gt;: effectively runs whatever &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;CMD&lt;/code&gt; is specified in the Dockerfile in an interactive terminal (in this case, it just opens up a bash shell).&lt;sup id=&quot;fnref:1&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; For more information, see &lt;a href=&quot;https://docs.docker.com/engine/reference/run/&quot;&gt;this link&lt;/a&gt;. The point here is that Docker was designed to run well in the background (e.g. for deploying a web application), and so you need to be explicit about wanting to interact with the container via a terminal.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;--rm&lt;/code&gt;: remove the container after you’re done. You can additionally manage your docker images and containers via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;docker images&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;docker rmi [ image-id ]&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;docker container ls&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;docker container rm [ container-id ]&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-v&lt;/code&gt;: this final flag specifies a so-called “volume”. In this case, we bind our present working directory (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$PWD&lt;/code&gt;) to the working directory we specified in the container (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/usr/src&lt;/code&gt;). Docker also has their own &lt;a href=&quot;https://docs.docker.com/storage/volumes/&quot;&gt;storage volumes&lt;/a&gt;, but for the case of interactive discovery and data analytics, binding your actual filesystem to the container allows you to edit files and have them available locally when finished. If there is a better way to do this, please let me know in the comments.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;python3.9&lt;/code&gt;: the “tag” name we gave our image.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;add-shortcut-to-run&quot;&gt;Add Shortcut to Run&lt;/h3&gt;
+
+&lt;p&gt;That’s a lot to type each time we want to access our new version of Python! This shortcut function allows us to call &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;python-docker&lt;/code&gt; with an optional argument specifying the version we want (if we use this concept to build multiple versions).&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# ~/.bashrc&lt;/span&gt;
+
+...
+
+python-docker&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$# &lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;-eq&lt;/span&gt; 0 &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then
+		&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;p&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;python3.9&quot;&lt;/span&gt;       &lt;span class=&quot;c&quot;&gt;# default version&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;else
+		&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;p&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;python&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;        &lt;span class=&quot;c&quot;&gt;# user supplied version&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;fi
+
+	&lt;/span&gt;docker run &lt;span class=&quot;nt&quot;&gt;-it&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$PWD&lt;/span&gt;:/usr/src &lt;span class=&quot;nv&quot;&gt;$p&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;run-python&quot;&gt;Run Python&lt;/h3&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;source&lt;/span&gt; ~/.bashrc          &lt;span class=&quot;c&quot;&gt;# source our new function&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;python-docker
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;or&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;python-docker 3.9         &lt;span class=&quot;c&quot;&gt;# &amp;lt;-- manage version here&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;After doing this, you should see the following screen:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;docker&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; /usr/src
+
+&lt;span class=&quot;err&quot;&gt;$&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This is based on my personal favorite &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PS1&lt;/code&gt; settings in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.bashrc&lt;/code&gt;. From here, you can write files and run them in Python v3.9, and, since we included &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;numpy&lt;/code&gt; in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;requirements.txt&lt;/code&gt;, we have access to that as well.&lt;/p&gt;
+
+&lt;p&gt;For example:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;docker&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;usr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;src&lt;/span&gt; 
+
+&lt;span class=&quot;err&quot;&gt;$&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;python&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;Python&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;3.9&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Oct&lt;/span&gt;  &lt;span class=&quot;mi&quot;&gt;6&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2020&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;21&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;52&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;53&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; 
+&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;GCC&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;8.3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;on&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;linux&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;Type&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;help&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;copyright&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;credits&quot;&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;or&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;license&quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;more&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;information&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;numpy&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;14&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h3&gt;
+&lt;p&gt;And just like that, you can now manage multiple versions of the same language (e.g. Python) or test new languages (e.g. Go, Julia, Haskell) without a full local install.&lt;/p&gt;
+
+&lt;h3 id=&quot;link-to-code&quot;&gt;Link to Code&lt;/h3&gt;
+
+&lt;p&gt;If you’d like to see it all together, &lt;a href=&quot;https://github.com/slee981/docker-for-language-versions&quot;&gt;here is a link to the full code&lt;/a&gt;.&lt;/p&gt;
+
+&lt;div class=&quot;footnotes&quot; role=&quot;doc-endnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:1&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-it&lt;/code&gt; flag “instructs Docker to allocate a pseudo-TTY connected to the container’s stdin”. &lt;a href=&quot;https://docs.docker.com/engine/reference/commandline/run/&quot;&gt;Link to documentation&lt;/a&gt;. &lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;</content><author><name></name></author><summary type="html">Introduction</summary></entry></feed>
