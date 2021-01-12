@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
-<loc>http://localhost:4000/general/tutorial/2020/10/15/docker.html</loc>
+<loc>https://stephenlee.info/sparkling-correlation/general/tutorial/2020/10/15/docker.html</loc>
 <lastmod>2020-10-15T00:00:00-05:00</lastmod>
 </url>
 <url>
-<loc>http://localhost:4000/econometrics/tutorial/2020/10/20/replicate-robust-stata-errors.html</loc>
+<loc>https://stephenlee.info/sparkling-correlation/econometrics/tutorial/2020/10/20/replicate-robust-stata-errors.html</loc>
 <lastmod>2020-10-20T00:00:00-05:00</lastmod>
 </url>
 <url>
-<loc>http://localhost:4000/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html</loc>
+<loc>https://stephenlee.info/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html</loc>
 <lastmod>2020-12-20T00:00:00-06:00</lastmod>
 </url>
 <url>
-<loc>http://localhost:4000/about/</loc>
+<loc>https://stephenlee.info/sparkling-correlation/about/</loc>
 </url>
 <url>
-<loc>http://localhost:4000/archive.html</loc>
+<loc>https://stephenlee.info/sparkling-correlation/archive.html</loc>
 </url>
 <url>
-<loc>http://localhost:4000/categories.html</loc>
+<loc>https://stephenlee.info/sparkling-correlation/categories.html</loc>
 </url>
 <url>
-<loc>http://localhost:4000/</loc>
+<loc>https://stephenlee.info/sparkling-correlation/</loc>
 </url>
 </urlset>
