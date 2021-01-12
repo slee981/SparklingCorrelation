@@ -39,6 +39,7 @@ The goal of a neural network is to approximate a function, $$f(x)$$, such that i
 We can conveniently store the features in an $$N\times k$$ matrix called $$X$$, and similarly store the outcomes in a matrix $$Y$$. Thus, a length-$$k$$ horizontal row vector $$x_i$$ describes the features for observation $$i$$ (for example, this could be a specific house, person, photo, or document depending on your data). 
 
 Visually, we can imagine this as follows:
+
 $$ %katex
 f\Bigg(\begin{bmatrix}
 x_1 \\
