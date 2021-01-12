@@ -2,12 +2,12 @@ start:
 	bundle
 	bundle exec jekyll serve
 
-build-and-deploy: build 
+build-and-publish: build 
 	$(shell git add .)
 	$(shell git commit -m "update build")
-	deploy
+	publish
 
-deploy: 
+publish: 
 	git subtree push --prefix _site origin gh-pages
 
 build: 

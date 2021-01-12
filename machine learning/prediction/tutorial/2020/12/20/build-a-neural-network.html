@@ -136,7 +136,7 @@
 
 <ol>
   <li>
-    <p>This architecture represents a neural network in it’s simplest <em>feasible</em> form.<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote">2</a></sup> Many other implementations, like convolutional or recurrant neural networks, are extensions of this base framework.</p>
+    <p>This architecture represents a neural network in its simplest <em>feasible</em> form.<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote">2</a></sup> Many other implementations, like convolutional or recurrant neural networks, are extensions of this base framework.</p>
   </li>
   <li>
     <p>Julia is a fantastic language for learning this since it doesn’t distract from the math (i.e. matrix math is built in with convenient syntax), but still allows for powerful programming features that let us abstract from certain implementation details (i.e. using structs to create our own objects).</p>
@@ -153,12 +153,12 @@
 <h2 id="components-and-definitions">Components and Definitions</h2>
 <ul>
   <li><strong>Neural Network</strong>: A sequence of mathematical operations, philosophically inspired by a model of the brain, and designed to iteratively improve it’s fit of historical data, while maintaining the ability to generalize to new, unseen data.</li>
-  <li><strong>Layer</strong>: A building block of a neural network that receives input, performs a basic linear (technically, affine) transformation, and passes the affine transformation through a non-linear “activation function” as it’s output.</li>
+  <li><strong>Layer</strong>: A building block of a neural network that receives input, performs a basic linear (technically, affine) transformation, and passes the affine transformation through a non-linear “activation function” as its output.</li>
   <li><strong>Feedforward</strong>: The forward process of receiving an input, and progressing through the network layer by layer until you reach the final output.</li>
-  <li><strong>Fully-connected</strong>: A type of neural network where each layer’s inputs are “connected” to the final output via it’s own potentially unique relationship i.e. no inputs are ignored, and no weights are systematically repeated.</li>
+  <li><strong>Fully-connected</strong>: A type of neural network where each layer’s inputs are “connected” to the final output via its own potentially unique relationship i.e. no inputs are ignored, and no weights are systematically repeated.</li>
   <li><strong>Affine Transformation</strong>: A geometric transformation that preserves lines and parallelism, but not necessarily distances and angles [source: Wikipedia]. For our use case, it is simply a transformation of the form \(z = Ax + b\). This technically differs from a linear transformation, since a linear transformation doesn’t have a “bias” component.</li>
   <li><strong>Activation Function</strong>: A non-linear function applied element wise to a vector. Two common examples are the sigmoid and relu functions.</li>
-  <li><strong>Loss Function</strong>: A function that allows us to measure how well a predicted value matches the known “true” value. This is equivalently called a cost function or objective function.</li>
+  <li><strong>Loss Function</strong>: A function that allows us to measure how well a predicted value matches the known “true” value. This is equivalently called a cost function.</li>
   <li><strong>Stochastic Gradient Descent</strong>: An optimization process by which training a neural network is made feasible. Rather than calculating the true loss over the entire dataset before making a single update to our parameters, we only calculate the loss on a random subsample of the data and then update our weights accordingly. Emperically, this process is found to produce more general results as well as speed up the training process.</li>
 </ul>
 
@@ -170,34 +170,40 @@
 <p>Visually, we can imagine this as follows:</p>
 
 \[%katex
+\begin{aligned}
 f\Bigg(\begin{bmatrix}
-x_1 \\
-x_2 \\
-\vdots \\ 
-x_N
-\end{bmatrix} \Bigg) \approx \begin{bmatrix}
+x_{11} &amp; \ldots &amp; x_{1k}  \\
+\vdots &amp; \ddots &amp; \vdots \\ 
+x_{N1} &amp; \ldots &amp; x_{Nk} 
+\end{bmatrix}  \Bigg) &amp;\approx \begin{bmatrix}
 y_1 \\
 y_2 \\
 \vdots \\ 
 y_N
-\end{bmatrix}\]
+\end{bmatrix} \\
+f\Bigg(\begin{bmatrix}
+x_{1}^T  \\
+\vdots  \\ 
+x_{N}^T  
+\end{bmatrix}  \Bigg) &amp;\approx 
+\end{aligned}\]
 
 <h3 id="network">Network</h3>
 <p>Together, the neural network acts to:</p>
 <ol>
-  <li>Receive an observation’s input, \(x_i\).</li>
-  <li>Take a linear (technically, affine) transformation of the input features, i.e. \(Ax_i + b\).</li>
-  <li>Pass the resulting vector into a “non-linear activation function”, i.e. \(w_l = \sigma(Ax_i + b)\).</li>
-  <li>Use this output vector, \(w_l\), as the input to the next layer and repeat until you reach the last layer.</li>
-  <li>Compare the last predicted output \(w_L\) to the observed target output \(y_i\) (using a loss function).</li>
-  <li>Calculate the gradient of the loss function with respect to the weights you can control in each layer, i.e. all \(A\)’s and \(b\)’s.</li>
+  <li>Receive an observation’s input, <code class="language-plaintext highlighter-rouge">$$x_i$$</code>. This is the same as an individual row vector above, just transposed as a <code class="language-plaintext highlighter-rouge">$$k \times 1$$</code> column vector.</li>
+  <li>Take a linear (technically, affine) transformation of the input features, i.e. <code class="language-plaintext highlighter-rouge">$$Ax_i + b$$</code>. Here, the matrix <code class="language-plaintext highlighter-rouge">$$A$$</code> has dimensions <code class="language-plaintext highlighter-rouge">$$p \times k$$</code>, and the “bias” <code class="language-plaintext highlighter-rouge">$$b$$</code> is, accordingly, a <code class="language-plaintext highlighter-rouge">$$p \times 1$$</code> column vector.</li>
+  <li>Pass the resulting vector into a “non-linear activation function”, i.e. <code class="language-plaintext highlighter-rouge">$$w_l = \sigma(Ax_i + b)$$</code>. The output here will be a <code class="language-plaintext highlighter-rouge">$$p \times 1$$</code> column vector.</li>
+  <li>Use this output vector, <code class="language-plaintext highlighter-rouge">$$w_l$$</code>, as the input to the next layer and repeat the process until you reach the last layer.</li>
+  <li>Compare the last predicted output <code class="language-plaintext highlighter-rouge">$$w_L$$</code> to the observed target output <code class="language-plaintext highlighter-rouge">$$y_i$$</code> (using a loss function).</li>
+  <li>Calculate the gradient of the loss function with respect to the weights you can control in each layer, i.e. all <code class="language-plaintext highlighter-rouge">$$A$$</code>’s and <code class="language-plaintext highlighter-rouge">$$b$$</code>’s.</li>
   <li>Update the weights in the direction of maximum change i.e. the <em>negative</em> gradient. This is what the commonly used names backpropagation and gradient descent refer to.</li>
   <li>Repeat until satisfied.</li>
 </ol>
 
 <p>Visually, we can represent the network as follows.</p>
 
-<p><img src="https://stephenlee.info/assets/images/NeuralNet.png" alt="Neural Network" /></p>
+<p><img src="/sparkling-correlation/assets/images/NeuralNet.png" alt="Neural Network" /></p>
 
 <p>Note, this diagram is a bit different than the diagrams often shown. For me, this is more useful as it helps to internalize the fact that each layer is only performing basic math operations during the forward steps - no magic. Again, each layer will receive a vector of input, calculate a linear transformation (which returns another vector of possibly different length), pass each element of the new vector into a non-linear “activation” function, and then output that result to the next layer until there are no more layers.</p>
 
@@ -296,7 +302,7 @@ w_m
 \[%katex
 \frac{\partial C}{\partial A_l} \, , \, \frac{\partial C}{\partial b_l}\]
 
-<p>For each layer \(l \in [1, L]\).</p>
+<p>For each layer \(l \in [1, L]\). Important note: I will take some liberties with notation here to avoid additional superscripts and/or subscripts. Technically, a partial derivative must be taken with respect to a specific element, for example, <code class="language-plaintext highlighter-rouge">$$\frac{\partial C}{\partial a_{ij}^l}$$</code> for  <code class="language-plaintext highlighter-rouge">$$a_{ij}^l \in A_l$$</code>. In this case, I use notation that represents a “partial derivative of the cost function with respect to each of the elements of <code class="language-plaintext highlighter-rouge">$$A_l$$</code> and <code class="language-plaintext highlighter-rouge">$$b_l$$</code> in a layer”. Thus, the result of these family of derivatives I show will be vectors and matrices, rather than scalars.</p>
 
 <p>To do so, we use a technique commonly called “backpropagation”, and also known as “reverse mode differentiation”.<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote">4</a></sup> In short, rather than start from the input value and start chaining deravitives until you get to the output, we start with the output and work backwards to the input. This way, in one pass, we find all the relevant deravitives we care about. Check out the footnote in this paragraph for an excellent introduction to the concept.</p>
 
