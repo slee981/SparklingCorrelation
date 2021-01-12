@@ -152,7 +152,7 @@
 
 <h2 id="components-and-definitions">Components and Definitions</h2>
 <ul>
-  <li><strong>Neural Network</strong>: A sequence of mathematical operations, philosophically inspired by a model of the brain, and designed to iteratively improve it’s fit of historical data, while maintaining the ability to generalize to new, unseen data.</li>
+  <li><strong>Neural Network</strong>: A sequence of mathematical operations, philosophically inspired by a model of the brain, and designed to iteratively improve its fit of historical data, while maintaining the ability to generalize to new, unseen data.</li>
   <li><strong>Layer</strong>: A building block of a neural network that receives input, performs a basic linear (technically, affine) transformation, and passes the affine transformation through a non-linear “activation function” as its output.</li>
   <li><strong>Feedforward</strong>: The forward process of receiving an input, and progressing through the network layer by layer until you reach the final output.</li>
   <li><strong>Fully-connected</strong>: A type of neural network where each layer’s inputs are “connected” to the final output via its own potentially unique relationship i.e. no inputs are ignored, and no weights are systematically repeated.</li>
@@ -479,7 +479,7 @@ u_{t+1} = u_t - \eta \nabla C(u_t)\]
 
 <p><strong>Network note:</strong></p>
 <ul>
-  <li>Each layer will store information about it’s current weights and biases, as well as it’s activation function and the derivative.</li>
+  <li>Each layer will store information about its current weights and biases, as well as its activation function and the derivative.</li>
   <li>Additionally, each layer will store some values for the backpropagation step. Namely, we will keep track of the last output for both the linear and “activated” vectors, as well as the running total of the various relevant partial derivatives i.e. the partial derivative of the cost (loss) function with respect to the linear transformation \(z\), the weights \(A\), and the bias vector \(b\).</li>
 </ul>
 
