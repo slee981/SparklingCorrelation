@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="https://stephenlee.info/sparkling-correlation/feed.xml" rel="self" type="application/atom+xml" /><link href="https://stephenlee.info/sparkling-correlation/" rel="alternate" type="text/html" /><updated>2021-01-12T14:01:54-06:00</updated><id>https://stephenlee.info/sparkling-correlation/feed.xml</id><title type="html">Sparkling Correlation</title><subtitle>On data, decisions, and causal thinking.</subtitle><entry><title type="html">Build a Neural Network with Julia</title><link href="https://stephenlee.info/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html" rel="alternate" type="text/html" title="Build a Neural Network with Julia" /><published>2020-12-20T00:00:00-06:00</published><updated>2020-12-20T00:00:00-06:00</updated><id>https://stephenlee.info/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network</id><content type="html" xml:base="https://stephenlee.info/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html">&lt;h2 id=&quot;audience&quot;&gt;Audience&lt;/h2&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="https://stephenlee.info/sparkling-correlation/feed.xml" rel="self" type="application/atom+xml" /><link href="https://stephenlee.info/sparkling-correlation/" rel="alternate" type="text/html" /><updated>2021-01-12T14:15:12-06:00</updated><id>https://stephenlee.info/sparkling-correlation/feed.xml</id><title type="html">Sparkling Correlation</title><subtitle>On data, decisions, and causal thinking.</subtitle><entry><title type="html">Build a Neural Network with Julia</title><link href="https://stephenlee.info/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html" rel="alternate" type="text/html" title="Build a Neural Network with Julia" /><published>2020-12-20T00:00:00-06:00</published><updated>2020-12-20T00:00:00-06:00</updated><id>https://stephenlee.info/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network</id><content type="html" xml:base="https://stephenlee.info/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html">&lt;h2 id=&quot;audience&quot;&gt;Audience&lt;/h2&gt;
 &lt;p&gt;If you’re reading this, I assume you are already motivated to learn how a neural network actually works. They are relevant and powerful tools, so the sell shouldn’t be too difficult anyway. There are many other excellent guides out there that I will link to below. If you find any mistakes or have comments, please email me or comment on this post.&lt;/p&gt;
 
 &lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
@@ -37,8 +37,9 @@
 
 &lt;p&gt;We can conveniently store the features in an \(N\times k\) matrix called \(X\), and similarly store the outcomes in a matrix \(Y\). Thus, a length-\(k\) horizontal row vector \(x_i\) describes the features for observation \(i\) (for example, this could be a specific house, person, photo, or document depending on your data).&lt;/p&gt;
 
-&lt;p&gt;Visually, we can imagine this as follows:
-\(%katex
+&lt;p&gt;Visually, we can imagine this as follows:&lt;/p&gt;
+
+\[%katex
 f\Bigg(\begin{bmatrix}
 x_1 \\
 x_2 \\
@@ -49,7 +50,7 @@ y_1 \\
 y_2 \\
 \vdots \\ 
 y_N
-\end{bmatrix}\)&lt;/p&gt;
+\end{bmatrix}\]
 
 &lt;h3 id=&quot;network&quot;&gt;Network&lt;/h3&gt;
 &lt;p&gt;Together, the neural network acts to:&lt;/p&gt;
