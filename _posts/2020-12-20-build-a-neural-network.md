@@ -66,7 +66,7 @@ Together, the neural network acts to:
 
 Visually, we can represent the network as follows. 
 
-![Neural Network](images/NeuralNet.png "Neural Network Diagram")
+![Neural Network]({{ site.url }}/assets/images/NeuralNet.png)
 
 Note, this diagram is a bit different than the diagrams often shown. For me, this is more useful as it helps to internalize the fact that each layer is only performing basic math operations during the forward steps - no magic. Again, each layer will receive a vector of input, calculate a linear transformation (which returns another vector of possibly different length), pass each element of the new vector into a non-linear "activation" function, and then output that result to the next layer until there are no more layers.
 

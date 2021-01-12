@@ -1,5 +1,11 @@
 ---
+title: Replicate STATA Robust Errors
+author: Stephen Lee
 layout: post
+
+categories: [econometrics, tutorial]
+toc: true
+katex: true
 ---
 
 ## Overview 
@@ -50,7 +56,7 @@ $$
 Y = X\beta 
 $$
 
-Here, `Y` is an `N x 1` column vector, `X` is an `N x K` matrix, and &beta; is a `K x 1` vector. For the simulation, I'll use 20 observations (i.e. `N = 20`), and three independent variables, including the constant / intercept (i.e. `K = 3`). The code for this is: 
+Here, $$Y$$ is an $$N x 1$$ column vector, $$X$$ is an $$N x K$$ matrix, and $$\beta$$ is a $$K x 1$$ vector. For the simulation, I'll use 20 observations (i.e. $$N = 20$$), and three independent variables, including the constant / intercept (i.e. $$K = 3$$). The code for this is: 
 
 ```matlab 
 x1 = (1:n)';                       % e.g. "time" trend
@@ -60,7 +66,7 @@ c  = ones(n, 1);                   % the intercept
 X = [x1 x2 c];
 ```
 
-Next, we want to generate a vector of heteroskedastic errors i.e. the variance of the error changes, conditional on `X`. I do this as follows: 
+Next, we want to generate a vector of heteroskedastic errors i.e. the variance of the error changes, conditional on $$X$$. I do this as follows: 
 
 ```matlab 
 u = randn(n, 1) .* x1     % randn ~ N(0, 1) so multiply by x1
@@ -68,7 +74,7 @@ u = randn(n, 1) .* x1     % randn ~ N(0, 1) so multiply by x1
 
 Note that use of `.*` does element wise multiplication instead of matrix multiplication. In MATLAB and Octave, the same hold for any other operator e.g. `.^ `, `./ `, etc. This multiplication ensures that the population variance changes, conditional on `x`.
 
-Finally we are ready to make our outcome variable, y. We will use the "true" data generating process (DGP) of: 
+Finally we are ready to make our outcome variable, $$y$$. We will use the "true" data generating process (DGP) of: 
 
 $$
 y_i = 2 + 4x_{1i} - 3x_{2i}
@@ -92,7 +98,7 @@ $$
 min (Y - X\beta)' (Y - X\beta)
 $$
 
-One way to solve this is to take the derivative with respect to &beta;, and solve for &beta;.[^1] Doing so yields: 
+One way to solve this is to take the derivative with respect to $$\beta$$, and solve for $$\beta$$.[^1] Doing so yields: 
 
 $$ 
 \beta = (X' X)^{-1} (X'Y)
@@ -104,7 +110,7 @@ In MATLAB / Octave code, this takes the following form:
 betas = inv(X' * X) * (X' * Y);
 ```
 
-These will be our point estimates in a `K x 1` column vector.
+These will be our point estimates in a $$K x 1$$ column vector.
 
 ### Variance
 We may wonder how confident we can be in those estimates. How precise are they? The "standard" way to estimate the standard error is to assume that all the "true" errors come from the same distribution (with the same variance). In this case we have residuals given by:
@@ -125,7 +131,7 @@ $$
 V(u_i | x_i) = E(u^2_i | x_i) = \sigma^2_i
 $$
 
-Note that in this case, the variance of the error term can change with the values of `x`: in other words, knowing `x` tells you something about how much you might miss by. If we think this is likely the case, we use the "robust" error calculation that follows.
+Note that in this case, the variance of the error term can change with the values of $$x$$: in other words, knowing $$x$$ tells you something about how much you might miss by. If we think this is likely the case, we use the "robust" error calculation that follows.
 
 ### Asymptotic Properties
 Following certain "nice" assumptions,[^2] the estimates for &beta; can be shown to come from the following asymptotic distribution: 
@@ -134,7 +140,7 @@ $$
 \hat{\beta}_{OLS} \sim N \bigg(\beta, (X' X)^{-1} X' \Omega X (X' X)^{-1} \bigg)
 $$ 
 
-Where &Omega; represents the variance-covariance matrix of the error terms. If the errors are homoskedastic, then we can let: 
+Where $$\Omega$$ represents the variance-covariance matrix of the error terms. If the errors are homoskedastic, then we can let: 
 
 $$ 
 \Omega = \sigma^2I
@@ -158,7 +164,7 @@ stdVar = s2 * inv(X' * X);
 stdErr = diag( stdVar .^ 0.5);
 ```
 
-However, if the errors are heteroskedastic, then we have to allow the diagonal elements of &Omega; to differ. In this case, White (1980) proposed to estimate it using the square of the estimated residuals. 
+However, if the errors are heteroskedastic, then we have to allow the diagonal elements of $$\Omega$$ to differ. In this case, White (1980) proposed to estimate it using the square of the estimated residuals. 
 
 In this case, our code becomes: 
 
@@ -173,7 +179,7 @@ whiteVar = inv(X'*X) * X'*omega*X * inv(X'*X) * (n/(n-k));
 whiteErr = diag( whiteVar .^ 0.5);
 ```
 
-You might be wondering where the `n/(n-k)` came from - and that's very observant of you! According to Cameron and Trivedi[^3], this convention to adjust by the degrees of freedom has limited theoretical basis, and is used out of convention and because simulation shows it works well. Go figure. 
+You might be wondering where the `n/(n-k)` came from - and that's very observant of you. According to Cameron and Trivedi[^3], this convention to adjust by the degrees of freedom has limited theoretical basis, and is used out of convention and because simulation shows it works well. Go figure. 
 
 And we're done! This code produces OLS estimates, standard errors, and "robust" standard errors that are consistent with STATA. 
 
@@ -181,8 +187,14 @@ And we're done! This code produces OLS estimates, standard errors, and "robust" 
 
 Now to the big question: does it work? See for yourself: 
 
-![stata-results](https://sparklingcorrelation.com/wp-content/uploads/2020/09/Screen-Shot-2020-09-17-at-10.14.57-PM.png)
-![matlab-results](https://sparklingcorrelation.com/wp-content/uploads/2020/09/Screen-Shot-2020-09-17-at-10.10.30-PM.png)
+<div class="row px-2">
+    <div class="col-sm-6">
+        <img src="{{ 'assets/images/stata-errors.png' | relative_url }}" alt="">
+    </div>
+    <div class="col-sm-6">
+        <img src="{{ 'assets/images/octave-errors.png' | relative_url }}" alt="">
+    </div>
+</div>
 
 ## Full Code for Replication 
 

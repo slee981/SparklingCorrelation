@@ -22,7 +22,12 @@ title: Sparkling Correlation
 email: smlee.981@gmail.com
 description: On data, decisions, and causal thinking. 
 
-baseurl: "sparkling-correlation" # the subpath of your site, e.g. /blog
+# Cadre settings
+navbar_img: assets/images/SparklingCorrelation.png
+favicon_img: assets/images/SparklingCorrelation-icon.png
+pagination: 3
+
+# baseurl: "sparkling-correlation" # the subpath of your site, e.g. /blog
 url: "https://stephenlee.info" # the base hostname & protocol for your site, e.g. http://example.com
 
 # Build settings
