@@ -24,7 +24,7 @@ The full code is available here:
 - [https://github.com/slee981/neural-network](https://github.com/slee981/neural-network). 
 
 ## Components and Definitions 
-- **Neural Network**: A sequence of mathematical operations, philosophically inspired by a model of the brain, and designed to iteratively improve it's fit of historical data, while maintaining the ability to generalize to new, unseen data. 
+- **Neural Network**: A sequence of mathematical operations, philosophically inspired by a model of the brain, and designed to iteratively improve its fit of historical data, while maintaining the ability to generalize to new, unseen data. 
 - **Layer**: A building block of a neural network that receives input, performs a basic linear (technically, affine) transformation, and passes the affine transformation through a non-linear "activation function" as its output.     
 - **Feedforward**: The forward process of receiving an input, and progressing through the network layer by layer until you reach the final output. 
 - **Fully-connected**: A type of neural network where each layer's inputs are "connected" to the final output via its own potentially unique relationship i.e. no inputs are ignored, and no weights are systematically repeated.  
@@ -360,7 +360,7 @@ end
 - Similar to the `Network` above, we create a new mutable struct to represent a `Layer`. One practical note is that we use `AbstractArray` because it allows us to set those variables as either a one-dimensional vector, or two-dimensional matrix. This works because of type inheritance, which is worth reading about in the official Julia documentation. 
 
 **Network note:** 
-- Each layer will store information about it's current weights and biases, as well as it's activation function and the derivative.
+- Each layer will store information about its current weights and biases, as well as its activation function and the derivative.
 - Additionally, each layer will store some values for the backpropagation step. Namely, we will keep track of the last output for both the linear and "activated" vectors, as well as the running total of the various relevant partial derivatives i.e. the partial derivative of the cost (loss) function with respect to the linear transformation $$z$$, the weights $$A$$, and the bias vector $$b$$. 
 
 #### Initializing the Layer
