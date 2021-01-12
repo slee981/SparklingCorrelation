@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="https://stephenlee.info/sparkling-correlation/feed.xml" rel="self" type="application/atom+xml" /><link href="https://stephenlee.info/sparkling-correlation/" rel="alternate" type="text/html" /><updated>2021-01-12T14:15:12-06:00</updated><id>https://stephenlee.info/sparkling-correlation/feed.xml</id><title type="html">Sparkling Correlation</title><subtitle>On data, decisions, and causal thinking.</subtitle><entry><title type="html">Build a Neural Network with Julia</title><link href="https://stephenlee.info/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html" rel="alternate" type="text/html" title="Build a Neural Network with Julia" /><published>2020-12-20T00:00:00-06:00</published><updated>2020-12-20T00:00:00-06:00</updated><id>https://stephenlee.info/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network</id><content type="html" xml:base="https://stephenlee.info/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html">&lt;h2 id=&quot;audience&quot;&gt;Audience&lt;/h2&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="https://stephenlee.info/sparkling-correlation/feed.xml" rel="self" type="application/atom+xml" /><link href="https://stephenlee.info/sparkling-correlation/" rel="alternate" type="text/html" /><updated>2021-01-12T14:25:24-06:00</updated><id>https://stephenlee.info/sparkling-correlation/feed.xml</id><title type="html">Sparkling Correlation</title><subtitle>On data, decisions, and causal thinking.</subtitle><entry><title type="html">Build a Neural Network with Julia</title><link href="https://stephenlee.info/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html" rel="alternate" type="text/html" title="Build a Neural Network with Julia" /><published>2020-12-20T00:00:00-06:00</published><updated>2020-12-20T00:00:00-06:00</updated><id>https://stephenlee.info/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network</id><content type="html" xml:base="https://stephenlee.info/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html">&lt;h2 id=&quot;audience&quot;&gt;Audience&lt;/h2&gt;
 &lt;p&gt;If you’re reading this, I assume you are already motivated to learn how a neural network actually works. They are relevant and powerful tools, so the sell shouldn’t be too difficult anyway. There are many other excellent guides out there that I will link to below. If you find any mistakes or have comments, please email me or comment on this post.&lt;/p&gt;
 
 &lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
@@ -6,7 +6,7 @@
 
 &lt;ol&gt;
   &lt;li&gt;
-    &lt;p&gt;This architecture represents a neural network in it’s simplest &lt;em&gt;feasible&lt;/em&gt; form.&lt;sup id=&quot;fnref:2&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:2&quot; class=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt; Many other implementations, like convolutional or recurrant neural networks, are extensions of this base framework.&lt;/p&gt;
+    &lt;p&gt;This architecture represents a neural network in its simplest &lt;em&gt;feasible&lt;/em&gt; form.&lt;sup id=&quot;fnref:2&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:2&quot; class=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt; Many other implementations, like convolutional or recurrant neural networks, are extensions of this base framework.&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;
     &lt;p&gt;Julia is a fantastic language for learning this since it doesn’t distract from the math (i.e. matrix math is built in with convenient syntax), but still allows for powerful programming features that let us abstract from certain implementation details (i.e. using structs to create our own objects).&lt;/p&gt;
@@ -23,12 +23,12 @@
 &lt;h2 id=&quot;components-and-definitions&quot;&gt;Components and Definitions&lt;/h2&gt;
 &lt;ul&gt;
   &lt;li&gt;&lt;strong&gt;Neural Network&lt;/strong&gt;: A sequence of mathematical operations, philosophically inspired by a model of the brain, and designed to iteratively improve it’s fit of historical data, while maintaining the ability to generalize to new, unseen data.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Layer&lt;/strong&gt;: A building block of a neural network that receives input, performs a basic linear (technically, affine) transformation, and passes the affine transformation through a non-linear “activation function” as it’s output.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Layer&lt;/strong&gt;: A building block of a neural network that receives input, performs a basic linear (technically, affine) transformation, and passes the affine transformation through a non-linear “activation function” as its output.&lt;/li&gt;
   &lt;li&gt;&lt;strong&gt;Feedforward&lt;/strong&gt;: The forward process of receiving an input, and progressing through the network layer by layer until you reach the final output.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Fully-connected&lt;/strong&gt;: A type of neural network where each layer’s inputs are “connected” to the final output via it’s own potentially unique relationship i.e. no inputs are ignored, and no weights are systematically repeated.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Fully-connected&lt;/strong&gt;: A type of neural network where each layer’s inputs are “connected” to the final output via its own potentially unique relationship i.e. no inputs are ignored, and no weights are systematically repeated.&lt;/li&gt;
   &lt;li&gt;&lt;strong&gt;Affine Transformation&lt;/strong&gt;: A geometric transformation that preserves lines and parallelism, but not necessarily distances and angles [source: Wikipedia]. For our use case, it is simply a transformation of the form \(z = Ax + b\). This technically differs from a linear transformation, since a linear transformation doesn’t have a “bias” component.&lt;/li&gt;
   &lt;li&gt;&lt;strong&gt;Activation Function&lt;/strong&gt;: A non-linear function applied element wise to a vector. Two common examples are the sigmoid and relu functions.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Loss Function&lt;/strong&gt;: A function that allows us to measure how well a predicted value matches the known “true” value. This is equivalently called a cost function or objective function.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Loss Function&lt;/strong&gt;: A function that allows us to measure how well a predicted value matches the known “true” value. This is equivalently called a cost function.&lt;/li&gt;
   &lt;li&gt;&lt;strong&gt;Stochastic Gradient Descent&lt;/strong&gt;: An optimization process by which training a neural network is made feasible. Rather than calculating the true loss over the entire dataset before making a single update to our parameters, we only calculate the loss on a random subsample of the data and then update our weights accordingly. Emperically, this process is found to produce more general results as well as speed up the training process.&lt;/li&gt;
 &lt;/ul&gt;
 
@@ -40,34 +40,40 @@
 &lt;p&gt;Visually, we can imagine this as follows:&lt;/p&gt;
 
 \[%katex
+\begin{aligned}
 f\Bigg(\begin{bmatrix}
-x_1 \\
-x_2 \\
-\vdots \\ 
-x_N
-\end{bmatrix} \Bigg) \approx \begin{bmatrix}
+x_{11} &amp;amp; \ldots &amp;amp; x_{1k}  \\
+\vdots &amp;amp; \ddots &amp;amp; \vdots \\ 
+x_{N1} &amp;amp; \ldots &amp;amp; x_{Nk} 
+\end{bmatrix}  \Bigg) &amp;amp;\approx \begin{bmatrix}
 y_1 \\
 y_2 \\
 \vdots \\ 
 y_N
-\end{bmatrix}\]
+\end{bmatrix} \\
+f\Bigg(\begin{bmatrix}
+x_{1}^T  \\
+\vdots  \\ 
+x_{N}^T  
+\end{bmatrix}  \Bigg) &amp;amp;\approx 
+\end{aligned}\]
 
 &lt;h3 id=&quot;network&quot;&gt;Network&lt;/h3&gt;
 &lt;p&gt;Together, the neural network acts to:&lt;/p&gt;
 &lt;ol&gt;
-  &lt;li&gt;Receive an observation’s input, \(x_i\).&lt;/li&gt;
-  &lt;li&gt;Take a linear (technically, affine) transformation of the input features, i.e. \(Ax_i + b\).&lt;/li&gt;
-  &lt;li&gt;Pass the resulting vector into a “non-linear activation function”, i.e. \(w_l = \sigma(Ax_i + b)\).&lt;/li&gt;
-  &lt;li&gt;Use this output vector, \(w_l\), as the input to the next layer and repeat until you reach the last layer.&lt;/li&gt;
-  &lt;li&gt;Compare the last predicted output \(w_L\) to the observed target output \(y_i\) (using a loss function).&lt;/li&gt;
-  &lt;li&gt;Calculate the gradient of the loss function with respect to the weights you can control in each layer, i.e. all \(A\)’s and \(b\)’s.&lt;/li&gt;
+  &lt;li&gt;Receive an observation’s input, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$x_i$$&lt;/code&gt;. This is the same as an individual row vector above, just transposed as a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$k \times 1$$&lt;/code&gt; column vector.&lt;/li&gt;
+  &lt;li&gt;Take a linear (technically, affine) transformation of the input features, i.e. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$Ax_i + b$$&lt;/code&gt;. Here, the matrix &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$A$$&lt;/code&gt; has dimensions &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$p \times k$$&lt;/code&gt;, and the “bias” &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$b$$&lt;/code&gt; is, accordingly, a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$p \times 1$$&lt;/code&gt; column vector.&lt;/li&gt;
+  &lt;li&gt;Pass the resulting vector into a “non-linear activation function”, i.e. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$w_l = \sigma(Ax_i + b)$$&lt;/code&gt;. The output here will be a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$p \times 1$$&lt;/code&gt; column vector.&lt;/li&gt;
+  &lt;li&gt;Use this output vector, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$w_l$$&lt;/code&gt;, as the input to the next layer and repeat the process until you reach the last layer.&lt;/li&gt;
+  &lt;li&gt;Compare the last predicted output &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$w_L$$&lt;/code&gt; to the observed target output &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$y_i$$&lt;/code&gt; (using a loss function).&lt;/li&gt;
+  &lt;li&gt;Calculate the gradient of the loss function with respect to the weights you can control in each layer, i.e. all &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$A$$&lt;/code&gt;’s and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$b$$&lt;/code&gt;’s.&lt;/li&gt;
   &lt;li&gt;Update the weights in the direction of maximum change i.e. the &lt;em&gt;negative&lt;/em&gt; gradient. This is what the commonly used names backpropagation and gradient descent refer to.&lt;/li&gt;
   &lt;li&gt;Repeat until satisfied.&lt;/li&gt;
 &lt;/ol&gt;
 
 &lt;p&gt;Visually, we can represent the network as follows.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://stephenlee.info/assets/images/NeuralNet.png&quot; alt=&quot;Neural Network&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/sparkling-correlation/assets/images/NeuralNet.png&quot; alt=&quot;Neural Network&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Note, this diagram is a bit different than the diagrams often shown. For me, this is more useful as it helps to internalize the fact that each layer is only performing basic math operations during the forward steps - no magic. Again, each layer will receive a vector of input, calculate a linear transformation (which returns another vector of possibly different length), pass each element of the new vector into a non-linear “activation” function, and then output that result to the next layer until there are no more layers.&lt;/p&gt;
 
@@ -166,7 +172,7 @@ w_m
 \[%katex
 \frac{\partial C}{\partial A_l} \, , \, \frac{\partial C}{\partial b_l}\]
 
-&lt;p&gt;For each layer \(l \in [1, L]\).&lt;/p&gt;
+&lt;p&gt;For each layer \(l \in [1, L]\). Important note: I will take some liberties with notation here to avoid additional superscripts and/or subscripts. Technically, a partial derivative must be taken with respect to a specific element, for example, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$\frac{\partial C}{\partial a_{ij}^l}$$&lt;/code&gt; for  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$a_{ij}^l \in A_l$$&lt;/code&gt;. In this case, I use notation that represents a “partial derivative of the cost function with respect to each of the elements of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$A_l$$&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$$b_l$$&lt;/code&gt; in a layer”. Thus, the result of these family of derivatives I show will be vectors and matrices, rather than scalars.&lt;/p&gt;
 
 &lt;p&gt;To do so, we use a technique commonly called “backpropagation”, and also known as “reverse mode differentiation”.&lt;sup id=&quot;fnref:4&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:4&quot; class=&quot;footnote&quot;&gt;4&lt;/a&gt;&lt;/sup&gt; In short, rather than start from the input value and start chaining deravitives until you get to the output, we start with the output and work backwards to the input. This way, in one pass, we find all the relevant deravitives we care about. Check out the footnote in this paragraph for an excellent introduction to the concept.&lt;/p&gt;
 

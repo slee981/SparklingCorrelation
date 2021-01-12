@@ -14,7 +14,7 @@ If you're reading this, I assume you are already motivated to learn how a neural
 ## Introduction 
 I implement a feedforward, fully-connected neural network[^1] with stochastic gradient descent in the Julia programming language (terms are defined below). There are two main advantages of this setup: 
 
-1. This architecture represents a neural network in it's simplest *feasible* form.[^2] Many other implementations, like convolutional or recurrant neural networks, are extensions of this base framework.   
+1. This architecture represents a neural network in its simplest *feasible* form.[^2] Many other implementations, like convolutional or recurrant neural networks, are extensions of this base framework.   
 
 2. Julia is a fantastic language for learning this since it doesn't distract from the math (i.e. matrix math is built in with convenient syntax), but still allows for powerful programming features that let us abstract from certain implementation details (i.e. using structs to create our own objects).
 
@@ -25,12 +25,12 @@ The full code is available here:
 
 ## Components and Definitions 
 - **Neural Network**: A sequence of mathematical operations, philosophically inspired by a model of the brain, and designed to iteratively improve it's fit of historical data, while maintaining the ability to generalize to new, unseen data. 
-- **Layer**: A building block of a neural network that receives input, performs a basic linear (technically, affine) transformation, and passes the affine transformation through a non-linear "activation function" as it's output.     
+- **Layer**: A building block of a neural network that receives input, performs a basic linear (technically, affine) transformation, and passes the affine transformation through a non-linear "activation function" as its output.     
 - **Feedforward**: The forward process of receiving an input, and progressing through the network layer by layer until you reach the final output. 
-- **Fully-connected**: A type of neural network where each layer's inputs are "connected" to the final output via it's own potentially unique relationship i.e. no inputs are ignored, and no weights are systematically repeated.  
+- **Fully-connected**: A type of neural network where each layer's inputs are "connected" to the final output via its own potentially unique relationship i.e. no inputs are ignored, and no weights are systematically repeated.  
 - **Affine Transformation**: A geometric transformation that preserves lines and parallelism, but not necessarily distances and angles [source: Wikipedia]. For our use case, it is simply a transformation of the form $$z = Ax + b$$. This technically differs from a linear transformation, since a linear transformation doesn't have a "bias" component.
 - **Activation Function**: A non-linear function applied element wise to a vector. Two common examples are the sigmoid and relu functions. 
-- **Loss Function**: A function that allows us to measure how well a predicted value matches the known "true" value. This is equivalently called a cost function or objective function.   
+- **Loss Function**: A function that allows us to measure how well a predicted value matches the known "true" value. This is equivalently called a cost function.   
 - **Stochastic Gradient Descent**: An optimization process by which training a neural network is made feasible. Rather than calculating the true loss over the entire dataset before making a single update to our parameters, we only calculate the loss on a random subsample of the data and then update our weights accordingly. Emperically, this process is found to produce more general results as well as speed up the training process. 
 
 ## Big Picture 
@@ -41,33 +41,39 @@ We can conveniently store the features in an $$N\times k$$ matrix called $$X$$, 
 Visually, we can imagine this as follows:
 
 $$ %katex
+\begin{aligned}
 f\Bigg(\begin{bmatrix}
-x_1 \\
-x_2 \\
-\vdots \\ 
-x_N
-\end{bmatrix} \Bigg) \approx \begin{bmatrix}
+x_{11} & \ldots & x_{1k}  \\
+\vdots & \ddots & \vdots \\ 
+x_{N1} & \ldots & x_{Nk} 
+\end{bmatrix}  \Bigg) &\approx \begin{bmatrix}
 y_1 \\
 y_2 \\
 \vdots \\ 
 y_N
-\end{bmatrix} 
+\end{bmatrix} \\
+f\Bigg(\begin{bmatrix}
+x_{1}^T  \\
+\vdots  \\ 
+x_{N}^T  
+\end{bmatrix}  \Bigg) &\approx 
+\end{aligned}
 $$
 
 ### Network 
 Together, the neural network acts to: 
-1. Receive an observation's input, $$x_i$$.
-2. Take a linear (technically, affine) transformation of the input features, i.e. $$Ax_i + b$$.
-3. Pass the resulting vector into a "non-linear activation function", i.e. $$w_l = \sigma(Ax_i + b)$$.
-4. Use this output vector, $$w_l$$, as the input to the next layer and repeat until you reach the last layer. 
-5. Compare the last predicted output $$w_L$$ to the observed target output $$y_i$$ (using a loss function).
-6. Calculate the gradient of the loss function with respect to the weights you can control in each layer, i.e. all $$A$$'s and $$b$$'s. 
+1. Receive an observation's input, `$$x_i$$`. This is the same as an individual row vector above, just transposed as a `$$k \times 1$$` column vector.
+2. Take a linear (technically, affine) transformation of the input features, i.e. `$$Ax_i + b$$`. Here, the matrix `$$A$$` has dimensions `$$p \times k$$`, and the "bias" `$$b$$` is, accordingly, a `$$p \times 1$$` column vector.
+3. Pass the resulting vector into a "non-linear activation function", i.e. `$$w_l = \sigma(Ax_i + b)$$`. The output here will be a `$$p \times 1$$` column vector.
+4. Use this output vector, `$$w_l$$`, as the input to the next layer and repeat the process until you reach the last layer. 
+5. Compare the last predicted output `$$w_L$$` to the observed target output `$$y_i$$` (using a loss function).
+6. Calculate the gradient of the loss function with respect to the weights you can control in each layer, i.e. all `$$A$$`'s and `$$b$$`'s. 
 7. Update the weights in the direction of maximum change i.e. the *negative* gradient. This is what the commonly used names backpropagation and gradient descent refer to. 
-8. Repeat until satisfied. 
+8. Repeat until satisfied.
 
 Visually, we can represent the network as follows. 
 
-![Neural Network]({{ site.url }}/assets/images/NeuralNet.png)
+![Neural Network]({{ 'assets/images/NeuralNet.png' | relative_url }})
 
 Note, this diagram is a bit different than the diagrams often shown. For me, this is more useful as it helps to internalize the fact that each layer is only performing basic math operations during the forward steps - no magic. Again, each layer will receive a vector of input, calculate a linear transformation (which returns another vector of possibly different length), pass each element of the new vector into a non-linear "activation" function, and then output that result to the next layer until there are no more layers.
 
@@ -171,7 +177,7 @@ $$ %katex
 \frac{\partial C}{\partial A_l} \, , \, \frac{\partial C}{\partial b_l}
 $$
 
-For each layer $$l \in [1, L]$$.
+For each layer $$l \in [1, L]$$. Important note: I will take some liberties with notation here to avoid additional superscripts and/or subscripts. Technically, a partial derivative must be taken with respect to a specific element, for example, `$$\frac{\partial C}{\partial a_{ij}^l}$$` for  `$$a_{ij}^l \in A_l$$`. In this case, I use notation that represents a "partial derivative of the cost function with respect to each of the elements of `$$A_l$$` and `$$b_l$$` in a layer". Thus, the result of these family of derivatives I show will be vectors and matrices, rather than scalars.
 
 To do so, we use a technique commonly called "backpropagation", and also known as "reverse mode differentiation".[^4] In short, rather than start from the input value and start chaining deravitives until you get to the output, we start with the output and work backwards to the input. This way, in one pass, we find all the relevant deravitives we care about. Check out the footnote in this paragraph for an excellent introduction to the concept. 
 
