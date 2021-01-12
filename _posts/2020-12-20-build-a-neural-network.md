@@ -1,79 +1,72 @@
 ---
+title: Build a Neural Network with Julia 
+author: Stephen Lee
 layout: post
+
+categories: [machine learning, prediction, tutorial]
 toc: true
 katex: true
 ---
 
-# Build a Neural Network with Julia 
-
 ## Audience
-If you're reading this, I assume you are already motivated to learn how a neural network works. This post will rely heavily on linear algebra and calculus. The Julia code I try to describe as I go, so if you don't have much (or any) experience with it, I would still give this post a read.
-
-There are certainly other excellent guides out there (I will link to a few below), but I tried a somewhat novel approach that will hopefully be complimentary. If you find any mistakes or have comments, please email me or comment on this post.
+If you're reading this, I assume you are already motivated to learn how a neural network actually works. They are relevant and powerful tools, so the sell shouldn't be too difficult anyway. There are many other excellent guides out there that I will link to below. If you find any mistakes or have comments, please email me or comment on this post.  
 
 ## Introduction 
-I implement a feed-forward, fully-connected neural network[^1] with stochastic gradient descent in the Julia programming language (terms are defined below). There are two main advantages of this setup: 
+I implement a feedforward, fully-connected neural network[^1] with stochastic gradient descent in the Julia programming language (terms are defined below). There are two main advantages of this setup: 
 
-1. This architecture represents a neural network in its simplest *feasible* form.[^2] Many other implementations, like convolutional or recurrent neural networks, are extensions of this base framework.
+1. This architecture represents a neural network in it's simplest *feasible* form.[^2] Many other implementations, like convolutional or recurrant neural networks, are extensions of this base framework.   
 
-2. Julia is a fantastic language for learning this since it doesn't distract from the math (i.e. matrix math is built in with convenient syntax), but still allows for powerful programming features that let us abstract from certain implementation details.
+2. Julia is a fantastic language for learning this since it doesn't distract from the math (i.e. matrix math is built in with convenient syntax), but still allows for powerful programming features that let us abstract from certain implementation details (i.e. using structs to create our own objects).
 
-Note, this post is for educational purposes only: the corresponding code is (hopefully) optimized for readability rather than speed or scalability. For a production grade neural network in Julia, check out Flux.jl. 
+Note, this is for educational purposes only: it is (hopefully) optimized for readability rather than speed or scalability. For a production grade neural network in Julia, check out Flux.jl. 
 
 The full code is available here: 
 - [https://github.com/slee981/neural-network](https://github.com/slee981/neural-network). 
 
 ## Components and Definitions 
-- **Neural Network**: A sequence of mathematical operations, philosophically inspired by a model of the brain, and designed to iteratively improve its fit of historical data, while maintaining the ability to generalize to new, unseen data. 
-- **Layer**: A building block of a neural network that receives input, performs a basic linear (technically, affine) transformation, and passes the affine transformation through a non-linear "activation function" as its output.
-- **Feed-forward**: The forward process of receiving an input, and progressing through the network layer by layer until you reach the final output.
-- **Fully-connected**: A type of neural network where each layer's inputs are "connected" to the final output via its own potentially unique relationship i.e. no inputs are ignored, and no weights are systematically repeated.
-- **Affine Transformation**: A geometric transformation that preserves lines and parallelism, but not necessarily distances and angles [source: Wikipedia]. For our use case, it is simply a transformation of the form $z = Ax + b$. This technically differs from a linear transformation, since a linear transformation doesn't have a "bias" component, $b$.
-- **Activation Function**: A non-linear function applied element wise to a vector. Two common examples are the sigmoid and relu functions.
-- **Loss Function**: A function that allows us to measure how well a predicted value matches the known "true" value. This is equivalently called a cost function.
+- **Neural Network**: A sequence of mathematical operations, philosophically inspired by a model of the brain, and designed to iteratively improve it's fit of historical data, while maintaining the ability to generalize to new, unseen data. 
+- **Layer**: A building block of a neural network that receives input, performs a basic linear (technically, affine) transformation, and passes the affine transformation through a non-linear "activation function" as it's output.     
+- **Feedforward**: The forward process of receiving an input, and progressing through the network layer by layer until you reach the final output. 
+- **Fully-connected**: A type of neural network where each layer's inputs are "connected" to the final output via it's own potentially unique relationship i.e. no inputs are ignored, and no weights are systematically repeated.  
+- **Affine Transformation**: A geometric transformation that preserves lines and parallelism, but not necessarily distances and angles [source: Wikipedia]. For our use case, it is simply a transformation of the form $$z = Ax + b$$. This technically differs from a linear transformation, since a linear transformation doesn't have a "bias" component.
+- **Activation Function**: A non-linear function applied element wise to a vector. Two common examples are the sigmoid and relu functions. 
+- **Loss Function**: A function that allows us to measure how well a predicted value matches the known "true" value. This is equivalently called a cost function or objective function.   
 - **Stochastic Gradient Descent**: An optimization process by which training a neural network is made feasible. Rather than calculating the true loss over the entire dataset before making a single update to our parameters, we only calculate the loss on a random subsample of the data and then update our weights accordingly. Emperically, this process is found to produce more general results as well as speed up the training process. 
 
 ## Big Picture 
-The goal of a neural network is to approximate a function, $f(x)$, such that the output produced by the neural network is wrong as little as possible when it sees new data. We start with a training dataset containing $N$ observations of $k$ features (aka covariates), as well as $N$ observations of some outcome that we will try to predict. For this exercise, I will ignore any use of a test dataset to focus on the math of the neural network.
+The goal of a neural network is to approximate a function, $$f(x)$$, such that it is wrong as little as possible when it sees new data. We start with a training dataset containing $$N$$ observations of $$k$$ features (aka covariates), as well as $$N$$ observations of some outcome that we will try to predict. For this exercise, I will ignore any use of a test dataset to focus on the math of the neural network.
 
-We can conveniently store the features in an $N\times k$ matrix called $X$, and similarly store the outcomes in a matrix $Y$. Thus, we can define a length-$k$ horizontal row vector $x_i^T$ that describes the features for observation $i$ (for example, this could be a specific house, person, photo, or document depending on your data). 
+We can conveniently store the features in an $$N\times k$$ matrix called $$X$$, and similarly store the outcomes in a matrix $$Y$$. Thus, a length-$$k$$ horizontal row vector $$x_i$$ describes the features for observation $$i$$ (for example, this could be a specific house, person, photo, or document depending on your data). 
 
 Visually, we can imagine this as follows:
-
-$$
-\begin{aligned}
+$$ %katex
 f\Bigg(\begin{bmatrix}
-x_{11} & \ldots & x_{1k}  \\
-\vdots & \ddots & \vdots \\ 
-x_{N1} & \ldots & x_{Nk} 
-\end{bmatrix}  \Bigg) &\approx \begin{bmatrix}
+x_1 \\
+x_2 \\
+\vdots \\ 
+x_N
+\end{bmatrix} \Bigg) \approx \begin{bmatrix}
 y_1 \\
 y_2 \\
 \vdots \\ 
 y_N
-\end{bmatrix} \\
-f\Bigg(\begin{bmatrix}
-x_{1}^T  \\
-\vdots  \\ 
-x_{N}^T  
-\end{bmatrix}  \Bigg) &\approx 
-\end{aligned}
+\end{bmatrix} 
 $$
 
 ### Network 
 Together, the neural network acts to: 
-1. Receive an observation's input, $x_i$. This is the same as an individual row vector above, just transposed as a $k \times 1$ column vector.
-2. Take a linear (technically, affine) transformation of the input features, i.e. $Ax_i + b$. Here, the matrix $A$ has dimensions $p \times k$, and the "bias" $b$ is, accordingly, a $p \times 1$ column vector.
-3. Pass the resulting vector into a "non-linear activation function", i.e. $w_l = \sigma(Ax_i + b)$. The output here will be a $p \times 1$ column vector.
-4. Use this output vector, $w_l$, as the input to the next layer and repeat the process until you reach the last layer. 
-5. Compare the last predicted output $w_L$ to the observed target output $y_i$ (using a loss function).
-6. Calculate the gradient of the loss function with respect to the weights you can control in each layer, i.e. all $A$'s and $b$'s. 
+1. Receive an observation's input, $$x_i$$.
+2. Take a linear (technically, affine) transformation of the input features, i.e. $$Ax_i + b$$.
+3. Pass the resulting vector into a "non-linear activation function", i.e. $$w_l = \sigma(Ax_i + b)$$.
+4. Use this output vector, $$w_l$$, as the input to the next layer and repeat until you reach the last layer. 
+5. Compare the last predicted output $$w_L$$ to the observed target output $$y_i$$ (using a loss function).
+6. Calculate the gradient of the loss function with respect to the weights you can control in each layer, i.e. all $$A$$'s and $$b$$'s. 
 7. Update the weights in the direction of maximum change i.e. the *negative* gradient. This is what the commonly used names backpropagation and gradient descent refer to. 
 8. Repeat until satisfied. 
 
 Visually, we can represent the network as follows. 
 
-![](https://sparklingcorrelation.com/wp-content/uploads/2020/12/NeuralNet.png)
+![Neural Network](images/NeuralNet.png "Neural Network Diagram")
 
 Note, this diagram is a bit different than the diagrams often shown. For me, this is more useful as it helps to internalize the fact that each layer is only performing basic math operations during the forward steps - no magic. Again, each layer will receive a vector of input, calculate a linear transformation (which returns another vector of possibly different length), pass each element of the new vector into a non-linear "activation" function, and then output that result to the next layer until there are no more layers.
 
@@ -82,7 +75,7 @@ We apply a non-linear "activation" function to the result of the linear transfor
 
 Two very common activation functions are sigmoid and relu, defined as follows: 
 
-$$
+$$ %katex
 \begin{aligned}
 \sigma_{sigmoid}(z) &= \frac{1}{1 + e^{-z}} \\ \\
 \sigma_{relu}(z) &= max(0, z)
@@ -91,19 +84,19 @@ $$
 
 In this case, the activation function is applied element-wise to the linear transformation step, i.e.: 
 
-$$
+$$ %katex
 \begin{aligned}
-w_l &= \sigma(Ax_i + b) \\ 
+w_l &= \sigma(Ax + b) \\ 
 &= \sigma\Bigg( \begin{bmatrix}
-a_{11} & \ldots & a_{1k}  \\
+a_{11} & \ldots & a_{1N}  \\
 \vdots & \ddots & \vdots \\ 
-a_{m1} & \ldots & a_{1k} 
+x_{m1} & \ldots & a_{1N} 
 \end{bmatrix} 
 \begin{bmatrix}
-x_{i1} \\
-x_{i2} \\
+x_1 \\
+x_2 \\
 \vdots \\ 
-x_{ik}
+x_N
 \end{bmatrix} + 
 \begin{bmatrix}
 b_1 \\
@@ -124,16 +117,16 @@ w_m
 \end{aligned}
 $$
 
-Without the activation function, $\sigma$, the resulting series of linear transformations could be simplified to just a single simple linear transformation: we would never be able to fit more complex relationships. To convince yourself this is true, consider the following example of a hypothetical three (3) layer network without an activation function: 
+Without the activation function, $$\sigma$$, the resulting series of linear tranasformations could be simplified to just a single simple linear transformation: we would never be able to fit more complex relationships. To convince youself this is true, consider the following example of a hypothetical three (3) layer network without an activation function: 
 
-$$
+$$ %katex
 \begin{aligned} 
 \underbrace{A_3(\underbrace{A_2(\underbrace{A_1x_1 + b_1}_{\text{Layer 1}}) + b_2)}_{\text{Layer 2}} + b3}_{\text{Layer 3}} &= A_3 A_2 A_1 x_1 + A_3 A_2 b_1 + A_3 b_2 + b_3 \\ 
 &= A_sx_1 + b_s
 \end{aligned} 
 $$
 
-Where we let $A_s = A_3 A_2 A_1$ and $b_s = A_3 A_2 b_1 + A_3 b_2 + b_3$. This simplification will hopefully convince you that an $L$ layer neural network without a non-linear activation function applied to each of the layers will ultimately reduce to the mathematical equivalent of a single linear transformation. 
+Where we let $$A_s = A_3 A_2 A_1$$ and $$b_s = A_3 A_2 b_1 + A_3 b_2 + b_3$$. This simplification will hopefully convince you that an $$L$$ layer neural network without a non-linear activation function applied to each of the layers will ultimately reduce to the mathematical equilivant of a single linear transformation. 
 
 If you need additional convincing, this Julia code will reproduce the above relationship: 
 ```julia 
@@ -167,22 +160,23 @@ How do we evaluate success? Our neural network produces *some* output, and we ma
 The idea is simple: provide a way to quantify how good our model fits the data. In practice, this involves penalizing deviations from the true labeled results. If our model guesses the answer should be 0.21 when we know the answer is 1, we want the loss (cost) to be larger than if it had guessed 0.85. 
 
 In this write-up, I use the mean-squared-error loss function (largely due to the symmetry with standard OLS regression). There are other resources with great primers on other common loss functions, so I won't cover it here. The important part is that we want to minimize the loss - and to do that we use calculus.
+
 ### Backpropagation
-Once we have made a guess at what the answer should be, $w_L$, we compare it to the target output $y_i$ and realize it may not be exactly correct. In this case our cost (loss) function $C$ will produce a larger value than we want. How do we adjust the numbers in each layer's weight matrix $A_l$ and "bias"[^3] vector $b_l$, such that the value of loss function will decrease i.e. our predicted output will be closer to the target output? We take derivatives. 
+Once we have made a guess at what the answer should be, $$w_L$$, we compare it to the target output $$y_i$$ and realize it may not be exactly correct. In this case our cost (loss) function $$C$$ will produce a larger value than we want. How do we adjust the numbers in each layer's weight matrix $$A_l$$ and "bias"[^3] vector $$b_l$$, such that the value of loss function will decrease i.e. our predicted output will be closer to the target output? We take derivatives. 
 
-In math, what we want to know is this: what is the partial derivative of the loss function with respect to each of the numbers I can control i.e. the elements of each weight matrix $A_l$ and the bias vectors $b_l$. Put another way, we want to find: 
+In math, what we want to know is this: what is the partial derivative of the loss function with respect to each of the numbers I can control i.e. the elements of each weight matrix $$A_l$$ and the bias vectors $$b_l$$. Put another way, we want to find: 
 
-$$
+$$ %katex
 \frac{\partial C}{\partial A_l} \, , \, \frac{\partial C}{\partial b_l}
 $$
 
-For each layer $l \in [1, L]$. Important note: I will take some liberties with notation here to avoid additional superscripts and/or subscripts. Technically, a partial derivative must be taken with respect to a specific element, for example, $\frac{\partial C}{\partial a_{ij}^l}$ for  $a_{ij}^l \in A_l$. In this case, I use notation that represents a "partial derivative of the cost function with respect to each of the elements of $A_l$ and $b_l$ in a layer". Thus, the result of these family of derivatives I show will be vectors and matrices, rather than scalars.
+For each layer $$l \in [1, L]$$.
 
-To actually calculate the derivatives for each layer, we use a technique commonly called "backpropagation", and also known as "reverse mode differentiation".[^4] In short, rather than start from the input value and start chaining derivatives until you get to the output, we start with the output and work backwards to the input. This way, in one pass, we find all the relevant derivatives we care about. Check out the footnote in this paragraph for an excellent introduction to the concept. 
+To do so, we use a technique commonly called "backpropagation", and also known as "reverse mode differentiation".[^4] In short, rather than start from the input value and start chaining deravitives until you get to the output, we start with the output and work backwards to the input. This way, in one pass, we find all the relevant deravitives we care about. Check out the footnote in this paragraph for an excellent introduction to the concept. 
 
-Thus, starting with the last layer, we find derivatives: 
+Thus, starting with the last layer, we find deravitives: 
 
-$$
+$$ %katex
 \begin{aligned}
 \frac{\partial C}{\partial A_L} &= \textcolor{blue}{\frac{\partial C}{\partial w_L}} \textcolor{red}{\frac{\partial w_L}{\partial z_L}} \textcolor{goldenrod}{\frac{\partial z_L}{\partial A_{L}}} \\ \\
 \frac{\partial C}{\partial b_L} &= \textcolor{blue}{\frac{\partial C}{\partial w_L}} \textcolor{red}{\frac{\partial w_L}{\partial z_L}} \textcolor{seagreen}{\frac{\partial z_L}{\partial b_{L}}} 
@@ -191,18 +185,18 @@ $$
 
 It's important to remember that we pick the relevant functions. So, for example, if we use a variant of the mean square error cost (loss) function we find
 
-$$
+$$ %katex
 \begin{aligned}
 C &= \frac{1}{2}\sum_i (w_{Li} - y_i)^2  & \Leftarrow \text{Cost function} \\ 
 \textcolor{blue}{\frac{\partial C}{\partial w_{Li}}} &= \textcolor{blue}{w_{Li} - y_i} & \Leftarrow \text{Vector}
 \end{aligned}
 $$
 
-Note that when our target $y_i$ is a vector instead of a scalar (e.g. for a categorical problem), we often choose a method of aggregating the losses for each element of that vector. In the Google framework Tensorflow, for example, they call this a reduction.[^5] The main reason for this is that it simplifies the math and calculations significantly. This simplification only applies to the reported "cost" (loss) value itself, not the derivative, however, which can remain a vector. 
+Note that when our target $$y_i$$ is a vector instead of a scalar (e.g. for a categorical problem), we often choose a method of aggregating the losses for each element of that vector. In the Google framework Tensorflow, for example, they call this a reduction.[^5] The main reason for this is that it simplifies the math and calculations significantly. This simplification only applies to the reported "cost" (loss) value itself, not the derivative, however, which can remain a vector. 
 
 We can calculate the other necessary partial derivatives as well. 
 
-$$
+$$ %katex
 \begin{aligned}
 w_L &= \sigma\big(\underbrace{A_L w_{L-1} + b_L}_{z_L} \big) \\
 &= \sigma(z_L ) \\ \\
@@ -214,7 +208,7 @@ $$
 
 We can now put these values together to find our first relevant gradients (rearranging to fit the necessary geometry for matrix algebra): 
 
-$$
+$$ %katex
 \begin{aligned}
 \frac{\partial C}{\partial A_L} &= \textcolor{red}{\sigma'(z_L)} \textcolor{blue}{\bigg(w_{Li} - y_i\bigg)} \textcolor{goldenrod}{(w_{L-1})^T} \\ \\
 \frac{\partial C}{\partial b_L} &= \textcolor{red}{\sigma'(z_L)} \textcolor{blue}{\bigg(w_{Li} - y_i\bigg)} \textcolor{seagreen}{(1)} 
@@ -223,7 +217,7 @@ $$
 
 More generally, using the chain rule, we can calculate the gradient for any layer as follows: 
 
-$$
+$$ %katex
 \begin{aligned}
 \frac{\partial C}{\partial A_l} &= \textcolor{blue}{\frac{\partial C}{\partial w_L}} \textcolor{red}{\frac{\partial w_L}{\partial z_L}} \textcolor{violet}{\frac{\partial z_L}{\partial w_{L-1}}} \ldots \frac{\partial z_l}{\partial A_l} \\ \\
 \frac{\partial C}{\partial b_l} &= \textcolor{blue}{\frac{\partial C}{\partial w_L}} \textcolor{red}{\frac{\partial w_L}{\partial z_L}} \textcolor{violet}{\frac{\partial z_L}{\partial w_{L-1}}} \ldots \frac{\partial z_l}{\partial b_l}
@@ -235,19 +229,19 @@ Actual implementations of these calculations can be found in the code below.
 ### Stochastic Gradient Descent
 Once we calculate how each of the numbers in our weights and biases impact the ultimate cost function, we need to decide how to update them such that the overall cost will decrease next time. For this, we use gradient descent. You may recall that the gradient points in the positive direction of maximum slope i.e. the gradient tells us, for a particular point in the space, which direction will a given change have the maximum impact. Since we are trying to minimize the cost function, we want to move in the *negative* direction of the same gradient vector: hence, gradient *descent*. 
 
-Since the gradient of the cost function is defined for the entire sample of $N$ observations, in theory, we should have to do a forward pass of each data point in order to calculate the "true" loss. For large datasets, which we need for this type of machine learning, this becomes infeasible as you would need thousands and thousands of passes through the dataset. 
+Since the gradient of the cost function is defined for the entire sample of $$N$$ observations, in theory, we should have to do a forward pass of each data point in order to calculate the "true" loss. For large datasets, which we need for this type of machine learning, this becomes infeasible as you would need thousands and thousands of passes through the dataset. 
 
 Stochastic gradient descent is a heuristic solutions to this problem. Rather than calcualte the gradient of the cost function over the entire (training) dataset, we sample from our data and calculate the gradient over that subsample. This subsample can be as small as a single observation, and often isn't more than 32 rows of data (i.e. observations). 
 
 Once we have our gradient, we update the weights according to some rule. The simplest takes the form: 
 
-$$
+$$ %katex
 u_{t+1} = u_t - \eta \nabla C(u_t)
 $$
 
-Where $u_{t+1}$ is the updated weight or bias, $\eta$ acts as a scale for the update and is referred to as the step size or learning rate, and $\nabla C(u_t)$ is the (stochastic) gradient of the cost function evaluated at the original point $u_t$. To solidify this concept, we can imagine the gradient of the cost function looks something like: 
+Where $$u_{t+1}$$ is the updated weight or bias, $$\eta$$ acts as a scale for the update and is referred to as the step size or learning rate, and $$\nabla C(u_t)$$ is the (stochastic) gradient of the cost function evaluated at the original point $$u_t$$. To solidify this concept, we can imagine the gradient of the cost function looks something like: 
 
-$$
+$$ %katex
 \nabla C(A_L, b_L, ..., A_1, b_1) = \begin{bmatrix}
 \frac{\partial C}{\partial A_L} \\ \\
 \frac{\partial C}{\partial b_L} \\
@@ -257,9 +251,9 @@ $$
 \end{bmatrix}
 $$
 
-Recalling, that the partial derivatives are calculated as above for each of the elements in the weight matricies $A_l$ and bias vectors $b_l$ for $l \in [1, L]$. This is to say that, practically, we are calculating these elements backward from the last layer to the first layer
+Recalling, that the partial derivatives are calculated as above for each of the elements in the weight matricies $$A_l$$ and bias vectors $$b_l$$ for $$l \in [1, L]$$. This is to say that, practically, we are calculating these elements backward from the last layer to the first layer
 
-$$
+$$ %katex
 \begin{aligned}
     a_{L(t+1)} &= a_{Lt} - \eta \frac{\partial C}{\partial A_L} \\ \\
     b_{L(t+1)} &= b_{Lt} - \eta \frac{\partial C}{\partial b_L} \\ 
@@ -360,7 +354,7 @@ end
 
 **Network note:** 
 - Each layer will store information about it's current weights and biases, as well as it's activation function and the derivative.
-- Additionally, each layer will store some values for the backpropagation step. Namely, we will keep track of the last output for both the linear and "activated" vectors, as well as the running total of the various relevant partial derivatives i.e. the partial derivative of the cost (loss) function with respect to the linear transformation $z$, the weights $A$, and the bias vector $b$. 
+- Additionally, each layer will store some values for the backpropagation step. Namely, we will keep track of the last output for both the linear and "activated" vectors, as well as the running total of the various relevant partial derivatives i.e. the partial derivative of the cost (loss) function with respect to the linear transformation $$z$$, the weights $$A$$, and the bias vector $$b$$. 
 
 #### Initializing the Layer
 When we create a new layer, we need to make a decision about how to initialize the weights and bias. Zeros are not a good choice, because our first forward passes will be uninteresting (the result is the same for all input), and it will be difficult to update during backpropagation. Thus, we want to initialize the weights and bias with some random component, the specifics of which we follow the default setting in Google's Tensorflow and use a so-called Glorot normal. This process basically allows us to initialize the weights and bias from a normal distribution with mean zero, and a variance that depends on the size of the inputs and outputs.    
@@ -368,7 +362,7 @@ When we create a new layer, we need to make a decision about how to initialize t
 Besides that, we set all of the "cache" values equal to zeros, since they will be calculated in due time. 
 
 ### Feedforward
-For each step, we need to make a forward pass of the network, which is a fancy way of saying we need to take an input $x$ and transform it to an output $w_L$.
+For each step, we need to make a forward pass of the network, which is a fancy way of saying we need to take an input $$x$$ and transform it to an output $$w_L$$.
 
 ```julia
 function feedforward!(net::Network, input::AbstractArray)::AbstractArray
@@ -393,7 +387,7 @@ function feedforward!(net::Network, input::AbstractArray)::AbstractArray
 end
 ```
 
-This code should be pretty simple: starting with the input, for each layer in the network, calculate the linear transformation $z = Ax + b$, the activated transformation $w = \sigma(z)$, and then use the previous layer's output as input to the next layer. 
+This code should be pretty simple: starting with the input, for each layer in the network, calculate the linear transformation $$z = Ax + b$$, the activated transformation $$w = \sigma(z)$$, and then use the previous layer's output as input to the next layer. 
 
 **Julia note:**
 - By convention, when a function can modify the element it's being passed, we include an exclaimation mark "!" at the end of the function i.e. `feedforward!` as opposed to `feedforward`. This is related to a paradigm called "pass by reference" in which you allow the function to modify the actual object you passed it. In contrast, "pass by value" will make a copy of the object's value, do some operation, and return a new value. Both are useful, and Julia allows for both. In this case, we want these functions to directly update the actual network. 
@@ -538,14 +532,14 @@ Alternatively, a neural network's tremendous power at fitting patterns in data i
 Thus, these different questions we ask ourselves may require different tools: in some cases, prediction alone may not be all that we are after. 
 
 ## Resources
-1. "Learning From Data", Gilbert Strang: [http://math.mit.edu/~gs/learningfromdata/](http://math.mit.edu/~gs/learningfromdata/)
-1. "Neural Networks and Deep Learning", Michael Nielsen: [http://neuralnetworksanddeeplearning.com/](http://neuralnetworksanddeeplearning.com/)
+1. Learning From Data, Gilbert Strang: [http://math.mit.edu/~gs/learningfromdata/](http://math.mit.edu/~gs/learningfromdata/)
+1. Michael Nielsen's "Neural Networks and Deep Learning": [http://neuralnetworksanddeeplearning.com/](http://neuralnetworksanddeeplearning.com/)
 1. Blog post on computational graphs: [https://colah.github.io/posts/2015-08-Backprop/](https://colah.github.io/posts/2015-08-Backprop/). 
 
 ## Footnotes 
 [^1]: In Keras, this is what you get when you setup a `Sequential` model with `Dense` layers.
-[^2]: I emphasize feasible because the stochastic gradient descent is an optimization technique that approximates the gradient of the loss function over some subsample of the data. However, without this (or some) optimization, training the network would simply take too long to be useful. 
-[^3]: Bias is a rather unfortunate naming convention for this vector. It might be more convenient to think of it as the intercept in the standard equation for a line $y = ax + b$. This is, it should not really be associated with bias as we typically think of it i.e. a tendency to error in a particular way, but rather as a standard component of an affine transformation. 
+[^2]: I emphasize feasible because the stochastic gradient descent is an optimization technique that approximates the gradient of the loss function over some subsample of the data. However, without this (or some) optimization, training the network would simply take too long to be useful. .
+[^3]: Bias is a rather unfortunate naming convention for this vector. It might be more convenient to think of it as the intercept in the standard equation for a line $$y = ax + b$$. This is, it should not really be associated with bias as we typically think of it i.e. a tendency to error in a particular way, but rather as a standard component of an affine transformation.    
 [^4]: For an excellent introduction to deravitives in computational graphs, see this link: https://colah.github.io/posts/2015-08-Backprop/.
 [^5]: See code for various examples of how to "reduce" a vector of losses into a single number: https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/ops/losses/losses_impl.py. 
-[^6]: Frameworks like Flux.jl and Tensorflow implement some type of autograd system that can handle the differentiation step without explictly passing the derivative function. For the sake of this tutorial, explicitly writing out a few derivatives is both helpful and simpler.# Build a Neural Network with Julia 
+[^6]: Frameworks like Flux.jl and Tensorflow implement some type of autograd system that can handle the differentiation step without explictly passing the derivative function. For the sake of this tutorial, explicitly writing out a few derivatives is both helpful and simpler.
