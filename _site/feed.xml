@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2021-01-11T23:47:47-06:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Sparkling Correlation</title><subtitle>On data, decisions, and causal thinking.</subtitle><entry><title type="html">Build a Neural Network with Julia</title><link href="http://localhost:4000/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html" rel="alternate" type="text/html" title="Build a Neural Network with Julia" /><published>2020-12-20T00:00:00-06:00</published><updated>2020-12-20T00:00:00-06:00</updated><id>http://localhost:4000/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network</id><content type="html" xml:base="http://localhost:4000/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html">&lt;h2 id=&quot;audience&quot;&gt;Audience&lt;/h2&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2021-01-12T08:59:09-06:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Sparkling Correlation</title><subtitle>On data, decisions, and causal thinking.</subtitle><entry><title type="html">Build a Neural Network with Julia</title><link href="http://localhost:4000/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html" rel="alternate" type="text/html" title="Build a Neural Network with Julia" /><published>2020-12-20T00:00:00-06:00</published><updated>2020-12-20T00:00:00-06:00</updated><id>http://localhost:4000/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network</id><content type="html" xml:base="http://localhost:4000/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html">&lt;h2 id=&quot;audience&quot;&gt;Audience&lt;/h2&gt;
 &lt;p&gt;If you’re reading this, I assume you are already motivated to learn how a neural network actually works. They are relevant and powerful tools, so the sell shouldn’t be too difficult anyway. There are many other excellent guides out there that I will link to below. If you find any mistakes or have comments, please email me or comment on this post.&lt;/p&gt;
 
 &lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
@@ -66,7 +66,7 @@ y_N
 
 &lt;p&gt;Visually, we can represent the network as follows.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;images/NeuralNet.png&quot; alt=&quot;Neural Network&quot; title=&quot;Neural Network Diagram&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/images/NeuralNet.png&quot; alt=&quot;Neural Network&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Note, this diagram is a bit different than the diagrams often shown. For me, this is more useful as it helps to internalize the fact that each layer is only performing basic math operations during the forward steps - no magic. Again, each layer will receive a vector of input, calculate a linear transformation (which returns another vector of possibly different length), pass each element of the new vector into a non-linear “activation” function, and then output that result to the next layer until there are no more layers.&lt;/p&gt;
 
@@ -552,7 +552,7 @@ u_{t+1} = u_t - \eta \nabla C(u_t)\]
       &lt;p&gt;Frameworks like Flux.jl and Tensorflow implement some type of autograd system that can handle the differentiation step without explictly passing the derivative function. For the sake of this tutorial, explicitly writing out a few derivatives is both helpful and simpler. &lt;a href=&quot;#fnref:6&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
   &lt;/ol&gt;
-&lt;/div&gt;</content><author><name>Stephen Lee</name></author><category term="machine learning" /><category term="prediction" /><category term="tutorial" /><summary type="html">Audience If you’re reading this, I assume you are already motivated to learn how a neural network actually works. They are relevant and powerful tools, so the sell shouldn’t be too difficult anyway. There are many other excellent guides out there that I will link to below. If you find any mistakes or have comments, please email me or comment on this post.</summary></entry><entry><title type="html">Stata</title><link href="http://localhost:4000/2020/10/20/stata.html" rel="alternate" type="text/html" title="Stata" /><published>2020-10-20T00:00:00-05:00</published><updated>2020-10-20T00:00:00-05:00</updated><id>http://localhost:4000/2020/10/20/stata</id><content type="html" xml:base="http://localhost:4000/2020/10/20/stata.html">&lt;h2 id=&quot;overview&quot;&gt;Overview&lt;/h2&gt;
+&lt;/div&gt;</content><author><name>Stephen Lee</name></author><category term="machine learning" /><category term="prediction" /><category term="tutorial" /><summary type="html">Audience If you’re reading this, I assume you are already motivated to learn how a neural network actually works. They are relevant and powerful tools, so the sell shouldn’t be too difficult anyway. There are many other excellent guides out there that I will link to below. If you find any mistakes or have comments, please email me or comment on this post.</summary></entry><entry><title type="html">Replicate STATA Robust Errors</title><link href="http://localhost:4000/econometrics/tutorial/2020/10/20/replicate-robust-stata-errors.html" rel="alternate" type="text/html" title="Replicate STATA Robust Errors" /><published>2020-10-20T00:00:00-05:00</published><updated>2020-10-20T00:00:00-05:00</updated><id>http://localhost:4000/econometrics/tutorial/2020/10/20/replicate-robust-stata-errors</id><content type="html" xml:base="http://localhost:4000/econometrics/tutorial/2020/10/20/replicate-robust-stata-errors.html">&lt;h2 id=&quot;overview&quot;&gt;Overview&lt;/h2&gt;
 
 &lt;p&gt;In STATA, it’s good practice to estimate your OLS model with “robust” standard errors. For example, in STATA you type:&lt;/p&gt;
 
@@ -601,7 +601,7 @@ u_{t+1} = u_t - \eta \nabla C(u_t)\]
 
 \[Y = X\beta\]
 
-&lt;p&gt;Here, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Y&lt;/code&gt; is an &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N x 1&lt;/code&gt; column vector, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;X&lt;/code&gt; is an &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N x K&lt;/code&gt; matrix, and β is a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;K x 1&lt;/code&gt; vector. For the simulation, I’ll use 20 observations (i.e. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N = 20&lt;/code&gt;), and three independent variables, including the constant / intercept (i.e. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;K = 3&lt;/code&gt;). The code for this is:&lt;/p&gt;
+&lt;p&gt;Here, \(Y\) is an \(N x 1\) column vector, \(X\) is an \(N x K\) matrix, and \(\beta\) is a \(K x 1\) vector. For the simulation, I’ll use 20 observations (i.e. \(N = 20\)), and three independent variables, including the constant / intercept (i.e. \(K = 3\)). The code for this is:&lt;/p&gt;
 
 &lt;div class=&quot;language-matlab highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;                       &lt;span class=&quot;c1&quot;&gt;% e.g. &quot;time&quot; trend&lt;/span&gt;
 &lt;span class=&quot;n&quot;&gt;x2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;round&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;randn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;     &lt;span class=&quot;c1&quot;&gt;% e.g. random variable&lt;/span&gt;
@@ -610,14 +610,14 @@ u_{t+1} = u_t - \eta \nabla C(u_t)\]
 &lt;span class=&quot;n&quot;&gt;X&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x2&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Next, we want to generate a vector of heteroskedastic errors i.e. the variance of the error changes, conditional on &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;X&lt;/code&gt;. I do this as follows:&lt;/p&gt;
+&lt;p&gt;Next, we want to generate a vector of heteroskedastic errors i.e. the variance of the error changes, conditional on \(X\). I do this as follows:&lt;/p&gt;
 
 &lt;div class=&quot;language-matlab highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;u&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;randn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt;     &lt;span class=&quot;c1&quot;&gt;% randn ~ N(0, 1) so multiply by x1&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Note that use of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.*&lt;/code&gt; does element wise multiplication instead of matrix multiplication. In MATLAB and Octave, the same hold for any other operator e.g. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.^ &lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;./ &lt;/code&gt;, etc. This multiplication ensures that the population variance changes, conditional on &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;.&lt;/p&gt;
 
-&lt;p&gt;Finally we are ready to make our outcome variable, y. We will use the “true” data generating process (DGP) of:&lt;/p&gt;
+&lt;p&gt;Finally we are ready to make our outcome variable, \(y\). We will use the “true” data generating process (DGP) of:&lt;/p&gt;
 
 \[y_i = 2 + 4x_{1i} - 3x_{2i}\]
 
@@ -636,7 +636,7 @@ u_{t+1} = u_t - \eta \nabla C(u_t)\]
 
 \[min (Y - X\beta)' (Y - X\beta)\]
 
-&lt;p&gt;One way to solve this is to take the derivative with respect to β, and solve for β.&lt;sup id=&quot;fnref:1&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; Doing so yields:&lt;/p&gt;
+&lt;p&gt;One way to solve this is to take the derivative with respect to \(\beta\), and solve for \(\beta\).&lt;sup id=&quot;fnref:1&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; Doing so yields:&lt;/p&gt;
 
 \[\beta = (X' X)^{-1} (X'Y)\]
 
@@ -645,7 +645,7 @@ u_{t+1} = u_t - \eta \nabla C(u_t)\]
 &lt;div class=&quot;language-matlab highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;betas&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;inv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;' * X) * (X'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;These will be our point estimates in a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;K x 1&lt;/code&gt; column vector.&lt;/p&gt;
+&lt;p&gt;These will be our point estimates in a \(K x 1\) column vector.&lt;/p&gt;
 
 &lt;h3 id=&quot;variance&quot;&gt;Variance&lt;/h3&gt;
 &lt;p&gt;We may wonder how confident we can be in those estimates. How precise are they? The “standard” way to estimate the standard error is to assume that all the “true” errors come from the same distribution (with the same variance). In this case we have residuals given by:&lt;/p&gt;
@@ -660,14 +660,14 @@ u_{t+1} = u_t - \eta \nabla C(u_t)\]
 
 \[V(u_i | x_i) = E(u^2_i | x_i) = \sigma^2_i\]
 
-&lt;p&gt;Note that in this case, the variance of the error term can change with the values of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;: in other words, knowing &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; tells you something about how much you might miss by. If we think this is likely the case, we use the “robust” error calculation that follows.&lt;/p&gt;
+&lt;p&gt;Note that in this case, the variance of the error term can change with the values of \(x\): in other words, knowing \(x\) tells you something about how much you might miss by. If we think this is likely the case, we use the “robust” error calculation that follows.&lt;/p&gt;
 
 &lt;h3 id=&quot;asymptotic-properties&quot;&gt;Asymptotic Properties&lt;/h3&gt;
 &lt;p&gt;Following certain “nice” assumptions,&lt;sup id=&quot;fnref:2&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:2&quot; class=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt; the estimates for β can be shown to come from the following asymptotic distribution:&lt;/p&gt;
 
 \[\hat{\beta}_{OLS} \sim N \bigg(\beta, (X' X)^{-1} X' \Omega X (X' X)^{-1} \bigg)\]
 
-&lt;p&gt;Where Ω represents the variance-covariance matrix of the error terms. If the errors are homoskedastic, then we can let:&lt;/p&gt;
+&lt;p&gt;Where \(\Omega\) represents the variance-covariance matrix of the error terms. If the errors are homoskedastic, then we can let:&lt;/p&gt;
 
 \[\Omega = \sigma^2I\]
 
@@ -688,7 +688,7 @@ u_{t+1} = u_t - \eta \nabla C(u_t)\]
 &lt;span class=&quot;n&quot;&gt;stdErr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;diag&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;stdVar&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.^&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;However, if the errors are heteroskedastic, then we have to allow the diagonal elements of Ω to differ. In this case, White (1980) proposed to estimate it using the square of the estimated residuals.&lt;/p&gt;
+&lt;p&gt;However, if the errors are heteroskedastic, then we have to allow the diagonal elements of \(\Omega\) to differ. In this case, White (1980) proposed to estimate it using the square of the estimated residuals.&lt;/p&gt;
 
 &lt;p&gt;In this case, our code becomes:&lt;/p&gt;
 
@@ -702,7 +702,7 @@ u_{t+1} = u_t - \eta \nabla C(u_t)\]
 &lt;span class=&quot;n&quot;&gt;whiteErr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;diag&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;whiteVar&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.^&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;You might be wondering where the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n/(n-k)&lt;/code&gt; came from - and that’s very observant of you! According to Cameron and Trivedi&lt;sup id=&quot;fnref:3&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:3&quot; class=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt;, this convention to adjust by the degrees of freedom has limited theoretical basis, and is used out of convention and because simulation shows it works well. Go figure.&lt;/p&gt;
+&lt;p&gt;You might be wondering where the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n/(n-k)&lt;/code&gt; came from - and that’s very observant of you. According to Cameron and Trivedi&lt;sup id=&quot;fnref:3&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:3&quot; class=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt;, this convention to adjust by the degrees of freedom has limited theoretical basis, and is used out of convention and because simulation shows it works well. Go figure.&lt;/p&gt;
 
 &lt;p&gt;And we’re done! This code produces OLS estimates, standard errors, and “robust” standard errors that are consistent with STATA.&lt;/p&gt;
 
@@ -710,8 +710,14 @@ u_{t+1} = u_t - \eta \nabla C(u_t)\]
 
 &lt;p&gt;Now to the big question: does it work? See for yourself:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://sparklingcorrelation.com/wp-content/uploads/2020/09/Screen-Shot-2020-09-17-at-10.14.57-PM.png&quot; alt=&quot;stata-results&quot; /&gt;
-&lt;img src=&quot;https://sparklingcorrelation.com/wp-content/uploads/2020/09/Screen-Shot-2020-09-17-at-10.10.30-PM.png&quot; alt=&quot;matlab-results&quot; /&gt;&lt;/p&gt;
+&lt;div class=&quot;row px-2&quot;&gt;
+    &lt;div class=&quot;col-sm-6&quot;&gt;
+        &lt;img src=&quot;/assets/images/stata-errors.png&quot; alt=&quot;&quot; /&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;col-sm-6&quot;&gt;
+        &lt;img src=&quot;/assets/images/octave-errors.png&quot; alt=&quot;&quot; /&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
 
 &lt;h2 id=&quot;full-code-for-replication&quot;&gt;Full Code for Replication&lt;/h2&gt;
 
@@ -729,7 +735,7 @@ u_{t+1} = u_t - \eta \nabla C(u_t)\]
       &lt;p&gt;Section 4.4.5. &lt;a href=&quot;#fnref:3&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
   &lt;/ol&gt;
-&lt;/div&gt;</content><author><name></name></author><summary type="html">Overview</summary></entry><entry><title type="html">Docker</title><link href="http://localhost:4000/2020/10/15/docker.html" rel="alternate" type="text/html" title="Docker" /><published>2020-10-15T00:00:00-05:00</published><updated>2020-10-15T00:00:00-05:00</updated><id>http://localhost:4000/2020/10/15/docker</id><content type="html" xml:base="http://localhost:4000/2020/10/15/docker.html">&lt;h3 id=&quot;introduction&quot;&gt;Introduction&lt;/h3&gt;
+&lt;/div&gt;</content><author><name>Stephen Lee</name></author><category term="econometrics" /><category term="tutorial" /><summary type="html">Overview</summary></entry><entry><title type="html">Docker for Managing Code Versions</title><link href="http://localhost:4000/general/tutorial/2020/10/15/docker.html" rel="alternate" type="text/html" title="Docker for Managing Code Versions" /><published>2020-10-15T00:00:00-05:00</published><updated>2020-10-15T00:00:00-05:00</updated><id>http://localhost:4000/general/tutorial/2020/10/15/docker</id><content type="html" xml:base="http://localhost:4000/general/tutorial/2020/10/15/docker.html">&lt;h3 id=&quot;introduction&quot;&gt;Introduction&lt;/h3&gt;
 
 &lt;p&gt;If you’re here, you either want to learn Docker, or find a better way to manage various programming languages and their versions.&lt;/p&gt;
 
@@ -882,4 +888,4 @@ python-docker&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quo
       &lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-it&lt;/code&gt; flag “instructs Docker to allocate a pseudo-TTY connected to the container’s stdin”. &lt;a href=&quot;https://docs.docker.com/engine/reference/commandline/run/&quot;&gt;Link to documentation&lt;/a&gt;. &lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
   &lt;/ol&gt;
-&lt;/div&gt;</content><author><name></name></author><summary type="html">Introduction</summary></entry></feed>
+&lt;/div&gt;</content><author><name>Stephen Lee</name></author><category term="general" /><category term="tutorial" /><summary type="html">Introduction</summary></entry></feed>
