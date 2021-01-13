@@ -28,8 +28,9 @@ favicon_img: assets/images/SparklingCorrelation-icon.png
 pagination: 3
 google_analytics: UA-138925131-2
 
-baseurl: "sparkling-correlation" # the subpath of your site, e.g. /blog
-url: "https://stephenlee.info" # the base hostname & protocol for your site, e.g. http://example.com
+# baseurl: "sparkling-correlation" # the subpath of your site, e.g. /blog
+# url: "https://stephenlee.info" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://sparklingcorrelation.com" # the base hostname & protocol for your site, e.g. http://example.com
 
 # Build settings
 theme: jekyll-theme-cadre
