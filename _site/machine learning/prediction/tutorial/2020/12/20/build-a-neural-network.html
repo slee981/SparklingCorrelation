@@ -5,21 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- load bootstrap -->
-  <link rel="stylesheet" href="/sparkling-correlation/assets/css/bootstrap.min.css">
-  <script src="/sparkling-correlation/assets/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+  <script src="/assets/js/bootstrap.bundle.min.js"></script>
 
   <!-- user -->
   
-    <link rel="shortcut icon" type="image/png" href="/sparkling-correlation/assets/images/SparklingCorrelation-icon.png">
+    <link rel="shortcut icon" type="image/png" href="/assets/images/SparklingCorrelation-icon.png">
   
-  <link rel="stylesheet" href="/sparkling-correlation/assets/css/open-color.css">
-  <link rel="stylesheet" href="/sparkling-correlation/assets/css/styles.css">
-  <script src="/sparkling-correlation/assets/js/main.js"></script>
+  <link rel="stylesheet" href="/assets/css/open-color.css">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <script src="/assets/js/main.js"></script>
 
   <!-- font awesome -->
   <script async src="https://use.fontawesome.com/releases/v5.0.12/js/all.js"></script>
 
-  <link type="application/atom+xml" rel="alternate" href="https://stephenlee.info/sparkling-correlation/feed.xml" title="Sparkling Correlation" />
+  <link type="application/atom+xml" rel="alternate" href="https://sparklingcorrelation.com/feed.xml" title="Sparkling Correlation" />
   <!-- Begin Jekyll SEO tag v2.7.1 -->
 <title>Build a Neural Network with Julia | Sparkling Correlation</title>
 <meta name="generator" content="Jekyll v3.9.0" />
@@ -28,15 +28,15 @@
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="Audience If you’re reading this, I assume you are already motivated to learn how a neural network actually works. They are relevant and powerful tools, so the sell shouldn’t be too difficult anyway. There are many other excellent guides out there that I will link to below. If you find any mistakes or have comments, please email me or comment on this post." />
 <meta property="og:description" content="Audience If you’re reading this, I assume you are already motivated to learn how a neural network actually works. They are relevant and powerful tools, so the sell shouldn’t be too difficult anyway. There are many other excellent guides out there that I will link to below. If you find any mistakes or have comments, please email me or comment on this post." />
-<link rel="canonical" href="https://stephenlee.info/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html" />
-<meta property="og:url" content="https://stephenlee.info/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html" />
+<link rel="canonical" href="https://sparklingcorrelation.com/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html" />
+<meta property="og:url" content="https://sparklingcorrelation.com/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html" />
 <meta property="og:site_name" content="Sparkling Correlation" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2020-12-20T00:00:00-06:00" />
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="Build a Neural Network with Julia" />
 <script type="application/ld+json">
-{"author":{"@type":"Person","name":"Stephen Lee"},"url":"https://stephenlee.info/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html","headline":"Build a Neural Network with Julia","dateModified":"2020-12-20T00:00:00-06:00","datePublished":"2020-12-20T00:00:00-06:00","description":"Audience If you’re reading this, I assume you are already motivated to learn how a neural network actually works. They are relevant and powerful tools, so the sell shouldn’t be too difficult anyway. There are many other excellent guides out there that I will link to below. If you find any mistakes or have comments, please email me or comment on this post.","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://stephenlee.info/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html"},"@context":"https://schema.org"}</script>
+{"author":{"@type":"Person","name":"Stephen Lee"},"url":"https://sparklingcorrelation.com/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html","headline":"Build a Neural Network with Julia","dateModified":"2020-12-20T00:00:00-06:00","datePublished":"2020-12-20T00:00:00-06:00","description":"Audience If you’re reading this, I assume you are already motivated to learn how a neural network actually works. They are relevant and powerful tools, so the sell shouldn’t be too difficult anyway. There are many other excellent guides out there that I will link to below. If you find any mistakes or have comments, please email me or comment on this post.","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://sparklingcorrelation.com/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html"},"@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
 
@@ -50,9 +50,9 @@
       <nav class="navbar navbar-expand-lg fixed-top navbar-light py-4" id="menu">
 
   <!-- BRAND LOGO OR NAME -->
-  <a class="navbar-brand top" id="site-logo" href="/sparkling-correlation/">
+  <a class="navbar-brand top" id="site-logo" href="/">
     
-      <img class="navbar-brand-img" src="/sparkling-correlation/assets/images/SparklingCorrelation.png" alt="">
+      <img class="navbar-brand-img" src="/assets/images/SparklingCorrelation.png" alt="">
     
   </a>
   
@@ -67,13 +67,13 @@
       <div class="navbar-nav">
       
         
-        <a class="nav-item nav-link " href="/sparkling-correlation/index.html">Home</a>
+        <a class="nav-item nav-link " href="/index.html">Home</a>
       
         
-        <a class="nav-item nav-link " href="/sparkling-correlation/categories.html">Categories</a>
+        <a class="nav-item nav-link " href="/categories.html">Categories</a>
       
         
-        <a class="nav-item nav-link " href="/sparkling-correlation/archive.html">Archive</a>
+        <a class="nav-item nav-link " href="/archive.html">Archive</a>
       
       </div>
     </div>
@@ -85,8 +85,8 @@
         <!-- jquery -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
-<script src="/sparkling-correlation/assets/js/adjustAnchorLink.js"></script>
-<script src="/sparkling-correlation/assets/js/liveTOCScroll.js"></script>
+<script src="/assets/js/adjustAnchorLink.js"></script>
+<script src="/assets/js/liveTOCScroll.js"></script>
 
 <div class="post-body">
   <div class="row post-header">
@@ -203,7 +203,7 @@ x_{N}^T
 
 <p>Visually, we can represent the network as follows.</p>
 
-<p><img src="/sparkling-correlation/assets/images/NeuralNet.png" alt="Neural Network" /></p>
+<p><img src="/assets/images/NeuralNet.png" alt="Neural Network" /></p>
 
 <p>Note, this diagram is a bit different than the diagrams often shown. For me, this is more useful as it helps to internalize the fact that each layer is only performing basic math operations during the forward steps - no magic. Again, each layer will receive a vector of input, calculate a linear transformation (which returns another vector of possibly different length), pass each element of the new vector into a non-linear “activation” function, and then output that result to the next layer until there are no more layers.</p>
 
@@ -710,19 +710,19 @@ u_{t+1} = u_t - \eta \nabla C(u_t)\]
         <li class="card-text">
           <time datetime="2020-12-20T00:00:00-06:00">Dec 20, 2020</time> 
           &raquo;
-          <a class="card-link" href="/sparkling-correlation/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html">Build a Neural Network with Julia</a>
+          <a class="card-link" href="/machine%20learning/prediction/tutorial/2020/12/20/build-a-neural-network.html">Build a Neural Network with Julia</a>
         </li>
       
         <li class="card-text">
           <time datetime="2020-12-20T00:00:00-06:00">Oct 20, 2020</time> 
           &raquo;
-          <a class="card-link" href="/sparkling-correlation/econometrics/tutorial/2020/10/20/replicate-robust-stata-errors.html">Replicate STATA Robust Errors</a>
+          <a class="card-link" href="/econometrics/tutorial/2020/10/20/replicate-robust-stata-errors.html">Replicate STATA Robust Errors</a>
         </li>
       
         <li class="card-text">
           <time datetime="2020-12-20T00:00:00-06:00">Oct 15, 2020</time> 
           &raquo;
-          <a class="card-link" href="/sparkling-correlation/general/tutorial/2020/10/15/docker.html">Docker for Managing Code Versions</a>
+          <a class="card-link" href="/general/tutorial/2020/10/15/docker.html">Docker for Managing Code Versions</a>
         </li>
       
     </ul>
@@ -744,7 +744,7 @@ u_{t+1} = u_t - \eta \nabla C(u_t)\]
             
             
             
-            <a class="card-link my-2 py-2 px-3" href="/sparkling-correlation/categories.html#general">
+            <a class="card-link my-2 py-2 px-3" href="/categories.html#general">
               
               
                 General
@@ -756,7 +756,7 @@ u_{t+1} = u_t - \eta \nabla C(u_t)\]
             
             
             
-            <a class="card-link my-2 py-2 px-3" href="/sparkling-correlation/categories.html#tutorial">
+            <a class="card-link my-2 py-2 px-3" href="/categories.html#tutorial">
               
               
                 Tutorial
@@ -768,7 +768,7 @@ u_{t+1} = u_t - \eta \nabla C(u_t)\]
             
             
             
-            <a class="card-link my-2 py-2 px-3" href="/sparkling-correlation/categories.html#econometrics">
+            <a class="card-link my-2 py-2 px-3" href="/categories.html#econometrics">
               
               
                 Econometrics
@@ -780,7 +780,7 @@ u_{t+1} = u_t - \eta \nabla C(u_t)\]
             
             
             
-            <a class="card-link my-2 py-2 px-3" href="/sparkling-correlation/categories.html#machine-learning">
+            <a class="card-link my-2 py-2 px-3" href="/categories.html#machine-learning">
               
               
                 Machine
@@ -794,7 +794,7 @@ u_{t+1} = u_t - \eta \nabla C(u_t)\]
             
             
             
-            <a class="card-link my-2 py-2 px-3" href="/sparkling-correlation/categories.html#prediction">
+            <a class="card-link my-2 py-2 px-3" href="/categories.html#prediction">
               
               
                 Prediction
