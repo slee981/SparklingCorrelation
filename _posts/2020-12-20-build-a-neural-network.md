@@ -62,12 +62,12 @@ $$
 
 ### Network 
 Together, the neural network acts to: 
-1. Receive an observation's input, `$$x_i$$`. This is the same as an individual row vector above, just transposed as a `$$k \times 1$$` column vector.
-2. Take a linear (technically, affine) transformation of the input features, i.e. `$$Ax_i + b$$`. Here, the matrix `$$A$$` has dimensions `$$p \times k$$`, and the "bias" `$$b$$` is, accordingly, a `$$p \times 1$$` column vector.
-3. Pass the resulting vector into a "non-linear activation function", i.e. `$$w_l = \sigma(Ax_i + b)$$`. The output here will be a `$$p \times 1$$` column vector.
-4. Use this output vector, `$$w_l$$`, as the input to the next layer and repeat the process until you reach the last layer. 
-5. Compare the last predicted output `$$w_L$$` to the observed target output `$$y_i$$` (using a loss function).
-6. Calculate the gradient of the loss function with respect to the weights you can control in each layer, i.e. all `$$A$$`'s and `$$b$$`'s. 
+1. Receive an observation's input, $$x_i$$. This is the same as an individual row vector above, just transposed as a $$k \times 1$$ column vector.
+2. Take a linear (technically, affine) transformation of the input features, i.e. $$Ax_i + b$$. Here, the matrix $$A$$ has dimensions $$p \times k$$, and the "bias" $$b$$ is, accordingly, a $$p \times 1$$ column vector.
+3. Pass the resulting vector into a "non-linear activation function", i.e. $$w_l = \sigma(Ax_i + b)$$. The output here will be a $$p \times 1$$ column vector.
+4. Use this output vector, $$w_l$$, as the input to the next layer and repeat the process until you reach the last layer. 
+5. Compare the last predicted output $$w_L$$ to the observed target output $$y_i$$ (using a loss function).
+6. Calculate the gradient of the loss function with respect to the weights you can control in each layer, i.e. all $$A$$'s and $$b$$'s. 
 7. Update the weights in the direction of maximum change i.e. the *negative* gradient. This is what the commonly used names backpropagation and gradient descent refer to. 
 8. Repeat until satisfied.
 
@@ -177,7 +177,7 @@ $$ %katex
 \frac{\partial C}{\partial A_l} \, , \, \frac{\partial C}{\partial b_l}
 $$
 
-For each layer $$l \in [1, L]$$. Important note: I will take some liberties with notation here to avoid additional superscripts and/or subscripts. Technically, a partial derivative must be taken with respect to a specific element, for example, `$$\frac{\partial C}{\partial a_{ij}^l}$$` for  `$$a_{ij}^l \in A_l$$`. In this case, I use notation that represents a "partial derivative of the cost function with respect to each of the elements of `$$A_l$$` and `$$b_l$$` in a layer". Thus, the result of these family of derivatives I show will be vectors and matrices, rather than scalars.
+For each layer $$l \in [1, L]$$. Important note: I will take some liberties with notation here to avoid additional superscripts and/or subscripts. Technically, a partial derivative must be taken with respect to a specific element, for example, $$\frac{\partial C}{\partial a_{ij}^l}$$ for  $$a_{ij}^l \in A_l$$. In this case, I use notation that represents a "partial derivative of the cost function with respect to each of the elements of $$A_l$$ and $$b_l$$ in a layer". Thus, the result of these family of derivatives I show will be vectors and matrices, rather than scalars.
 
 To do so, we use a technique commonly called "backpropagation", and also known as "reverse mode differentiation".[^4] In short, rather than start from the input value and start chaining deravitives until you get to the output, we start with the output and work backwards to the input. This way, in one pass, we find all the relevant deravitives we care about. Check out the footnote in this paragraph for an excellent introduction to the concept. 
 

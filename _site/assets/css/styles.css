@@ -39,7 +39,13 @@ a.nav-link {
 
   .top {
     width: calc(200px * 0.65);
-    height: calc(45px * 0.65); } }
+    height: calc(45px * 0.65); }
+
+  .scrolling img {
+    max-height: none; }
+
+  .top img {
+    max-height: none; } }
 footer {
   background-color: var(--oc-gray-1); }
 
@@ -117,7 +123,8 @@ pre {
   margin: 1rem 0; }
   pre code {
     padding: 0;
-    background-color: inherit; }
+    background-color: inherit;
+    word-wrap: normal; }
 
 .toc-title {
   font-size: 16px;

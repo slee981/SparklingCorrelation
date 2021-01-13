@@ -191,12 +191,12 @@ x_{N}^T
 <h3 id="network">Network</h3>
 <p>Together, the neural network acts to:</p>
 <ol>
-  <li>Receive an observation’s input, <code class="language-plaintext highlighter-rouge">$$x_i$$</code>. This is the same as an individual row vector above, just transposed as a <code class="language-plaintext highlighter-rouge">$$k \times 1$$</code> column vector.</li>
-  <li>Take a linear (technically, affine) transformation of the input features, i.e. <code class="language-plaintext highlighter-rouge">$$Ax_i + b$$</code>. Here, the matrix <code class="language-plaintext highlighter-rouge">$$A$$</code> has dimensions <code class="language-plaintext highlighter-rouge">$$p \times k$$</code>, and the “bias” <code class="language-plaintext highlighter-rouge">$$b$$</code> is, accordingly, a <code class="language-plaintext highlighter-rouge">$$p \times 1$$</code> column vector.</li>
-  <li>Pass the resulting vector into a “non-linear activation function”, i.e. <code class="language-plaintext highlighter-rouge">$$w_l = \sigma(Ax_i + b)$$</code>. The output here will be a <code class="language-plaintext highlighter-rouge">$$p \times 1$$</code> column vector.</li>
-  <li>Use this output vector, <code class="language-plaintext highlighter-rouge">$$w_l$$</code>, as the input to the next layer and repeat the process until you reach the last layer.</li>
-  <li>Compare the last predicted output <code class="language-plaintext highlighter-rouge">$$w_L$$</code> to the observed target output <code class="language-plaintext highlighter-rouge">$$y_i$$</code> (using a loss function).</li>
-  <li>Calculate the gradient of the loss function with respect to the weights you can control in each layer, i.e. all <code class="language-plaintext highlighter-rouge">$$A$$</code>’s and <code class="language-plaintext highlighter-rouge">$$b$$</code>’s.</li>
+  <li>Receive an observation’s input, \(x_i\). This is the same as an individual row vector above, just transposed as a \(k \times 1\) column vector.</li>
+  <li>Take a linear (technically, affine) transformation of the input features, i.e. \(Ax_i + b\). Here, the matrix \(A\) has dimensions \(p \times k\), and the “bias” \(b\) is, accordingly, a \(p \times 1\) column vector.</li>
+  <li>Pass the resulting vector into a “non-linear activation function”, i.e. \(w_l = \sigma(Ax_i + b)\). The output here will be a \(p \times 1\) column vector.</li>
+  <li>Use this output vector, \(w_l\), as the input to the next layer and repeat the process until you reach the last layer.</li>
+  <li>Compare the last predicted output \(w_L\) to the observed target output \(y_i\) (using a loss function).</li>
+  <li>Calculate the gradient of the loss function with respect to the weights you can control in each layer, i.e. all \(A\)’s and \(b\)’s.</li>
   <li>Update the weights in the direction of maximum change i.e. the <em>negative</em> gradient. This is what the commonly used names backpropagation and gradient descent refer to.</li>
   <li>Repeat until satisfied.</li>
 </ol>
@@ -302,7 +302,7 @@ w_m
 \[%katex
 \frac{\partial C}{\partial A_l} \, , \, \frac{\partial C}{\partial b_l}\]
 
-<p>For each layer \(l \in [1, L]\). Important note: I will take some liberties with notation here to avoid additional superscripts and/or subscripts. Technically, a partial derivative must be taken with respect to a specific element, for example, <code class="language-plaintext highlighter-rouge">$$\frac{\partial C}{\partial a_{ij}^l}$$</code> for  <code class="language-plaintext highlighter-rouge">$$a_{ij}^l \in A_l$$</code>. In this case, I use notation that represents a “partial derivative of the cost function with respect to each of the elements of <code class="language-plaintext highlighter-rouge">$$A_l$$</code> and <code class="language-plaintext highlighter-rouge">$$b_l$$</code> in a layer”. Thus, the result of these family of derivatives I show will be vectors and matrices, rather than scalars.</p>
+<p>For each layer \(l \in [1, L]\). Important note: I will take some liberties with notation here to avoid additional superscripts and/or subscripts. Technically, a partial derivative must be taken with respect to a specific element, for example, \(\frac{\partial C}{\partial a_{ij}^l}\) for  \(a_{ij}^l \in A_l\). In this case, I use notation that represents a “partial derivative of the cost function with respect to each of the elements of \(A_l\) and \(b_l\) in a layer”. Thus, the result of these family of derivatives I show will be vectors and matrices, rather than scalars.</p>
 
 <p>To do so, we use a technique commonly called “backpropagation”, and also known as “reverse mode differentiation”.<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote">4</a></sup> In short, rather than start from the input value and start chaining deravitives until you get to the output, we start with the output and work backwards to the input. This way, in one pass, we find all the relevant deravitives we care about. Check out the footnote in this paragraph for an excellent introduction to the concept.</p>
 
