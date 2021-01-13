@@ -1,0 +1,13 @@
+@media (max-width: $md) {
+    .scrolling img {
+        width: calc(#{$navbar-img-width} * 0.55);
+        height: calc(#{$navbar-img-height} * 0.55);
+        max-height: none;
+    }
+
+    .top img {
+        width: calc(#{$navbar-img-width} * 0.65);
+        height: calc(#{$navbar-img-height} * 0.65);
+        max-height: none;
+    }
+}
