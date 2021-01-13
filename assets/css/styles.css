@@ -19,11 +19,11 @@ a.navbar-brand {
   font-size: 1.25rem; }
 
 .scrolling img {
-  width: calc(220px * 0.9);
+  width: calc(200px * 0.9);
   height: calc(45px * 0.9); }
 
 .top img {
-  width: 220px;
+  width: 200px;
   height: 45px; }
 
 a.nav-link {
@@ -34,11 +34,11 @@ a.nav-link {
 
 @media only screen and (max-width: 768px) {
   .scrolling {
-    width: calc(220px * 0.55);
+    width: calc(200px * 0.55);
     height: calc(45px * 0.55); }
 
   .top {
-    width: calc(220px * 0.65);
+    width: calc(200px * 0.65);
     height: calc(45px * 0.65); } }
 footer {
   background-color: var(--oc-gray-1); }
@@ -393,3 +393,14 @@ sup {
 
 .highlight .ss {
   color: #076678; }
+
+@media (max-width: 768px) {
+  .scrolling img {
+    width: calc(200px * 0.55);
+    height: calc(45px * 0.55);
+    max-height: none; }
+
+  .top img {
+    width: calc(200px * 0.65);
+    height: calc(45px * 0.65);
+    max-height: none; } }
