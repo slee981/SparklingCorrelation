@@ -4,6 +4,7 @@ author: Stephen Lee
 layout: post
 
 categories: [machine learning, prediction, tutorial]
+tags: [julia]
 toc: true
 katex: true
 ---

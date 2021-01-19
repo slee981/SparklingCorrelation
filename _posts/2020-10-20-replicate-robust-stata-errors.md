@@ -6,6 +6,7 @@ layout: post
 categories: [econometrics, tutorial]
 toc: true
 katex: true
+tags: [octave, matlab, stata, stats]
 ---
 
 ## Overview 
