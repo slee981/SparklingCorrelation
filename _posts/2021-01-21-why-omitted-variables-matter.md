@@ -18,7 +18,7 @@ More generally, this reinforces the mantra that unless very specific assumptions
 ## Setup
 You have data, and you're excited to use it. The only problem: you know the data is missing variables that you would prefer to have. 
 
-Suppose we believe the variable $$x_1$$ predicts or explains an outcome $$y$$. Further, suppose there is an unobserved (or otherwise omitted) variable $$x_2}$$, which is correlated with both $$y$$ and $$x_1$$. An immediate implication is that our error term will no longer independent of the included explanatory variable $$x_1$$, and our estimate of the relationship between $$x_1$$ and $$y$$ will be incorrect. 
+Suppose we believe the variable $$x_1$$ predicts or explains an outcome $$y$$. Further, suppose there is an unobserved (or otherwise omitted) variable $$x_2$$, which is correlated with both $$y$$ and $$x_1$$. An immediate implication is that our error term will no longer independent of the included explanatory variable $$x_1$$, and our estimate of the relationship between $$x_1$$ and $$y$$ will be incorrect. 
 
 More formally, suppose we have a "true" data generating process of
 
@@ -71,7 +71,7 @@ To make this a bit more concrete, and to highlight the potential side-effects of
 $$
 \begin{aligned}
     y &= 4 + x_1 - 3x_2 + u \quad &u \sim N(0, 1) \\ \\
-    x_2 &= 0.5x_1 + e \quad &e \sim N(0, 1) 
+    x_2 &= 0.5x_1 + e \quad &e \sim N(0, 50) 
 \end{aligned}
 $$
 
