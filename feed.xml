@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="https://sparklingcorrelation.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://sparklingcorrelation.com/" rel="alternate" type="text/html" /><updated>2021-01-22T18:21:01-06:00</updated><id>https://sparklingcorrelation.com/feed.xml</id><title type="html">Sparkling Correlation</title><subtitle>A blog on data, prediction, and causal inference.</subtitle><entry><title type="html">Omitted Variable Bias by Simulation</title><link href="https://sparklingcorrelation.com/econometrics/statistics/2021/01/21/why-omitted-variables-matter.html" rel="alternate" type="text/html" title="Omitted Variable Bias by Simulation" /><published>2021-01-21T00:00:00-06:00</published><updated>2021-01-21T00:00:00-06:00</updated><id>https://sparklingcorrelation.com/econometrics/statistics/2021/01/21/why-omitted-variables-matter</id><content type="html" xml:base="https://sparklingcorrelation.com/econometrics/statistics/2021/01/21/why-omitted-variables-matter.html">&lt;h2 id=&quot;overview&quot;&gt;Overview&lt;/h2&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="https://sparklingcorrelation.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://sparklingcorrelation.com/" rel="alternate" type="text/html" /><updated>2021-01-22T22:42:22-06:00</updated><id>https://sparklingcorrelation.com/feed.xml</id><title type="html">Sparkling Correlation</title><subtitle>A blog on data, prediction, and causal inference.</subtitle><entry><title type="html">Omitted Variable Bias by Simulation</title><link href="https://sparklingcorrelation.com/econometrics/statistics/2021/01/21/why-omitted-variables-matter.html" rel="alternate" type="text/html" title="Omitted Variable Bias by Simulation" /><published>2021-01-21T00:00:00-06:00</published><updated>2021-01-21T00:00:00-06:00</updated><id>https://sparklingcorrelation.com/econometrics/statistics/2021/01/21/why-omitted-variables-matter</id><content type="html" xml:base="https://sparklingcorrelation.com/econometrics/statistics/2021/01/21/why-omitted-variables-matter.html">&lt;h2 id=&quot;overview&quot;&gt;Overview&lt;/h2&gt;
 
 &lt;p&gt;In simulation, we can show that omitting a variable \(x_2\) can cause the point estimates for a correlated variable \(x_1\) to change from (positive) \(0.999\) with a p-value of nearly zero, to (negative!) \(-0.512\), also with a p-value of nearly zero!&lt;/p&gt;
 
@@ -7,7 +7,7 @@
 &lt;h2 id=&quot;setup&quot;&gt;Setup&lt;/h2&gt;
 &lt;p&gt;You have data, and you’re excited to use it. The only problem: you know the data is missing variables that you would prefer to have.&lt;/p&gt;
 
-&lt;p&gt;Suppose we believe the variable \(x_1\) predicts or explains an outcome \(y\). Further, suppose there is an unobserved (or otherwise omitted) variable \(x_2}\), which is correlated with both \(y\) and \(x_1\). An immediate implication is that our error term will no longer independent of the included explanatory variable \(x_1\), and our estimate of the relationship between \(x_1\) and \(y\) will be incorrect.&lt;/p&gt;
+&lt;p&gt;Suppose we believe the variable \(x_1\) predicts or explains an outcome \(y\). Further, suppose there is an unobserved (or otherwise omitted) variable \(x_2\), which is correlated with both \(y\) and \(x_1\). An immediate implication is that our error term will no longer independent of the included explanatory variable \(x_1\), and our estimate of the relationship between \(x_1\) and \(y\) will be incorrect.&lt;/p&gt;
 
 &lt;p&gt;More formally, suppose we have a “true” data generating process of&lt;/p&gt;
 
@@ -49,7 +49,7 @@
 
 \[\begin{aligned}
     y &amp;amp;= 4 + x_1 - 3x_2 + u \quad &amp;amp;u \sim N(0, 1) \\ \\
-    x_2 &amp;amp;= 0.5x_1 + e \quad &amp;amp;e \sim N(0, 1) 
+    x_2 &amp;amp;= 0.5x_1 + e \quad &amp;amp;e \sim N(0, 50) 
 \end{aligned}\]
 
 &lt;p&gt;Notice that \(x_2\) is correlated with both \(y\) and \(x_1\). As such, if we don’t include it in our regression model for whatever reason (either we don’t observe it or don’t think it’s relevant), then we will actually estimate the relationship with the opposite sign, and both be statistically significant!&lt;/p&gt;
