@@ -50,7 +50,7 @@ $$
 Speaking of omission, I will state without proof that this leads to the following relationship (for more details, see [this excellent PDF](https://are.berkeley.edu/courses/EEP118/spring2014/section/Handout5_student.pdf))
 
 $$
-\hat{\beta} = \beta + \frac{\sum_i (x_i - \bar{x}) u_i}{\sum_i (x_i - \bar{x}) x_i} 
+\hat{\beta} = \beta + \frac{\sum_i (x_i - \bar{x}) e_i}{\sum_i (x_i - \bar{x}) x_i} 
 $$
 
 In this case, if we omit $$x_2$$, we can no longer expect that our error term will be zero conditional on some value of $$x$$. In other words, the condition $$E(e \lvert x) = 0$$ no longer holds. 

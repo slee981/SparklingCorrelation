@@ -160,7 +160,7 @@
 
 <p>Speaking of omission, I will state without proof that this leads to the following relationship (for more details, see <a href="https://are.berkeley.edu/courses/EEP118/spring2014/section/Handout5_student.pdf">this excellent PDF</a>)</p>
 
-\[\hat{\beta} = \beta + \frac{\sum_i (x_i - \bar{x}) u_i}{\sum_i (x_i - \bar{x}) x_i}\]
+\[\hat{\beta} = \beta + \frac{\sum_i (x_i - \bar{x}) e_i}{\sum_i (x_i - \bar{x}) x_i}\]
 
 <p>In this case, if we omit \(x_2\), we can no longer expect that our error term will be zero conditional on some value of \(x\). In other words, the condition \(E(e \lvert x) = 0\) no longer holds.</p>
 
@@ -415,6 +415,27 @@
     </div>
   </div>
 
+  
+    <div class="row">
+      <div class="row mt-4" id="disqus_thread"></div>
+<script>
+  var disqus_config = function () {
+    this.page.url = 'https://sparklingcorrelation.com/econometrics/statistics/2021/01/21/why-omitted-variables-matter.html';
+    this.page.identifier = 'https://sparklingcorrelation.com/econometrics/statistics/2021/01/21/why-omitted-variables-matter.html';
+  };
+
+  (function() {
+    var d = document, s = d.createElement('script');
+
+    s.src = 'https://slee981.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+    </div>
   
       
 </div>
