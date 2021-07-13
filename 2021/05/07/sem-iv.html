@@ -19,24 +19,24 @@
   <!-- font awesome -->
   <script async src="https://use.fontawesome.com/releases/v5.0.12/js/all.js"></script>
 
-  <link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Sparkling Correlation" />
+  <link type="application/atom+xml" rel="alternate" href="https://sparklingcorrelation.com/feed.xml" title="Sparkling Correlation" />
   <!-- Begin Jekyll SEO tag v2.7.1 -->
 <title>SEM Estimation by 2SLS | Sparkling Correlation</title>
 <meta name="generator" content="Jekyll v3.9.0" />
 <meta property="og:title" content="SEM Estimation by 2SLS" />
 <meta name="author" content="Stephen Lee" />
 <meta property="og:locale" content="en_US" />
-<meta name="description" content="Estimating by 2SLS" />
-<meta property="og:description" content="Estimating by 2SLS" />
-<link rel="canonical" href="http://localhost:4000/2021/05/07/sem-iv.html" />
-<meta property="og:url" content="http://localhost:4000/2021/05/07/sem-iv.html" />
+<meta name="description" content="Overview" />
+<meta property="og:description" content="Overview" />
+<link rel="canonical" href="https://sparklingcorrelation.com/2021/05/07/sem-iv.html" />
+<meta property="og:url" content="https://sparklingcorrelation.com/2021/05/07/sem-iv.html" />
 <meta property="og:site_name" content="Sparkling Correlation" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2021-05-07T00:00:00-05:00" />
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="SEM Estimation by 2SLS" />
 <script type="application/ld+json">
-{"author":{"@type":"Person","name":"Stephen Lee"},"url":"http://localhost:4000/2021/05/07/sem-iv.html","headline":"SEM Estimation by 2SLS","dateModified":"2021-05-07T00:00:00-05:00","datePublished":"2021-05-07T00:00:00-05:00","description":"Estimating by 2SLS","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/2021/05/07/sem-iv.html"},"@context":"https://schema.org"}</script>
+{"author":{"@type":"Person","name":"Stephen Lee"},"url":"https://sparklingcorrelation.com/2021/05/07/sem-iv.html","headline":"SEM Estimation by 2SLS","dateModified":"2021-05-07T00:00:00-05:00","datePublished":"2021-05-07T00:00:00-05:00","description":"Overview","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://sparklingcorrelation.com/2021/05/07/sem-iv.html"},"@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
 
@@ -120,7 +120,7 @@
   
     <h3 class="toc-title">Table of Contents</h3>
   
-  <ul class="toc"><li><a href="#estimating-by-2sls">Estimating by 2SLS</a></li><li><a href="#microeconomic-theory">Microeconomic Theory</a></li><li><a href="#simulation">Simulation</a><ul><li><a href="#setup">Setup</a></li><li><a href="#build-dataset">Build Dataset</a></li><li><a href="#graph">Graph</a></li><li><a href="#intuition-for-first-stage">Intuition for First Stage</a></li><li><a href="#regression-results">Regression Results</a><ul><li><a href="#2sls---only-supply-shifters-in-first-stage">2SLS - Only Supply Shifters in First Stage</a></li><li><a href="#2sls---all-exogenous-variables-in-first-stage">2SLS - All Exogenous Variables in First Stage</a></li></ul></li></ul></li></ul>
+  <ul class="toc"><li><a href="#overview">Overview</a></li><li><a href="#microeconomic-theory">Microeconomic Theory</a></li><li><a href="#simulation">Simulation</a><ul><li><a href="#setup">Setup</a></li><li><a href="#build-dataset">Build Dataset</a></li><li><a href="#graph">Graph</a></li><li><a href="#intuition-for-first-stage">Intuition for First Stage</a></li><li><a href="#regression-results">Regression Results</a><ul><li><a href="#only-supply-shifters-in-first-stage">Only Supply Shifters in First Stage</a></li><li><a href="#all-exogenous-variables-in-first-stage">All Exogenous Variables in First Stage</a></li></ul></li></ul></li></ul>
 
 </div>
 
@@ -128,7 +128,7 @@
 
     <!-- MAIN POST -->
     <div class="col-sm-10 post p-4">
-        <h2 id="estimating-by-2sls">Estimating by 2SLS</h2>
+        <h2 id="overview">Overview</h2>
 
 <p>The goal is to:</p>
 
@@ -138,7 +138,7 @@
 </ol>
 
 <h2 id="microeconomic-theory">Microeconomic Theory</h2>
-<p>Suppose the true supply function for chicken is given by price, and one (or more) exogenous supply shifers \(Z_{supply}\):</p>
+<p>Suppose the true supply function for some product is given by price, and one (or more) exogenous supply shifers \(Z_{supply}\). To make this concrete, consider the beef and steak products, where exogenous supply shifters would be inputs like the price of land, cattle feed, and so on.</p>
 
 \[\begin{aligned}
     Q_{supply} &amp;= f(P_{supply}, \, Z_{supply})
@@ -173,7 +173,8 @@
     Q^* &amp;= f(Z_{demand}, Z_{supply}) 
 \end{aligned}\]
 
-<p>\(\textcolor{red}{NOTE}\): In equilibrium, price and quantity only depend on the exogenous supply and demand shifters. I think this one intuition for why we include all exogenous variables in the first stage.</p>
+<p><br />
+\(\textcolor{red}{NOTE}\): In equilibrium, price and quantity only depend on the exogenous supply and demand shifters.</p>
 
 <h2 id="simulation">Simulation</h2>
 
@@ -193,9 +194,11 @@
 
 <p>Which gives us the reduced form relationships:</p>
 
-\[P^* = 50 + Z_{supply} + Z_{demand} + v \\\]
+\[\begin{aligned}
+    P^* = 50 + Z_{supply} + Z_{demand} + v 
+\end{aligned}\]
 
-<p>Where $v = \frac{u_{demand} - u_{supply}}{2}$ contains the errors for both supply and demand.</p>
+<p>Where \(v = \frac{u_{demand} - u_{supply}}{2}\) contains the errors for both supply and demand.</p>
 
 <h3 id="build-dataset">Build Dataset</h3>
 <p>Using this relationship, we can create a simulation dataset as follows:</p>
@@ -207,93 +210,98 @@
   <li>Finally, we only keep positive values for price and quantity since a firm would simply shut down if that were the case.</li>
 </ol>
 
-<pre><code class="language-{r}"># number of observations to generate
-N &lt;- 100
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># number of observations to generate</span><span class="w">
+</span><span class="n">N</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">100</span><span class="w">
 
-# ud and us are exogenous ~ N(0, 1)
-ud &lt;- rnorm(N) * 0.1
-us &lt;- rnorm(N) * 0.1
-v &lt;- (ud - us) / 2
+</span><span class="c1"># ud and us are exogenous ~ N(0, 1)</span><span class="w">
+</span><span class="n">ud</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">rnorm</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="w"> 
+</span><span class="n">us</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">rnorm</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="w"> 
+</span><span class="n">v</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="p">(</span><span class="n">ud</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="m">2</span><span class="w">
 
-# supply and demand shifters are exogenous normal
-z1 &lt;- rnorm(N) * 2 + 2  # ~N(2, 2)
-z2 &lt;- rnorm(N) + 3      # ~N(3, 0)
+</span><span class="c1"># supply and demand shifters are exogenous normal</span><span class="w">
+</span><span class="c1"># although I believe the distributional assumptions </span><span class="w">
+</span><span class="c1"># can be relaxed</span><span class="w">
+</span><span class="n">z1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">rnorm</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">2</span><span class="w">  </span><span class="c1"># ~N(2, 2)</span><span class="w">
+</span><span class="n">z2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">rnorm</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">3</span><span class="w">      </span><span class="c1"># ~N(3, 0)</span><span class="w">
 
-# price using reduced form equation
-p   &lt;- 50 + z1 + z2 + v 
+</span><span class="c1"># price in equilibrium using reduced form equation</span><span class="w">
+</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">50</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">z1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">z2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">v</span><span class="w"> 
 
-# verify quantities are the same in equilibrium!
-qd  &lt;- 100 - p + 2*z2 + ud
-qs  &lt;- p - 2*z1 + us
-q   &lt;- qd
+</span><span class="c1"># verify quantities are the same in equilibrium!</span><span class="w">
+</span><span class="n">qd</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">2</span><span class="o">*</span><span class="n">z2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ud</span><span class="w">
+</span><span class="n">qs</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">2</span><span class="o">*</span><span class="n">z1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">us</span><span class="w">
+</span><span class="n">q</span><span class="w">  </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">qd</span><span class="w">
 
-if (sum(qd - qs) &gt; 1e10) {
-    cat("ERROR: Supply and demand not balanced")
-}
+</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nf">sum</span><span class="p">(</span><span class="n">qd</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">qs</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">1e10</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">cat</span><span class="p">(</span><span class="s2">"ERROR: Supply and demand not in equilibrium"</span><span class="p">)</span><span class="w">
+</span><span class="p">}</span><span class="w">
 
-# make dataset 
-data &lt;- tibble(
-    "Q" = q, 
-    "P" = p, 
-    "Z_Supply" = z1, 
-    "Z_Demand" = z2
-    ) %&gt;% 
-    filter(
-        Q &gt; 0 &amp;&amp; P &gt; 0
-    )
-</code></pre>
+</span><span class="c1"># make dataset </span><span class="w">
+</span><span class="c1"># we only keep values where quantiy and price </span><span class="w">
+</span><span class="c1"># are greater than zero. Our simulated datset may </span><span class="w">
+</span><span class="c1"># contain negative values since non-zero conditions </span><span class="w">
+</span><span class="c1"># are economic assumptions. </span><span class="w">
+</span><span class="n">data</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">tibble</span><span class="p">(</span><span class="w">
+        </span><span class="s2">"Q"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">q</span><span class="p">,</span><span class="w"> 
+        </span><span class="s2">"P"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="w"> 
+        </span><span class="s2">"Z_Supply"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">z1</span><span class="p">,</span><span class="w"> 
+        </span><span class="s2">"Z_Demand"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">z2</span><span class="w">
+    </span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+    </span><span class="n">filter</span><span class="p">(</span><span class="w">
+        </span><span class="n">Q</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">P</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">0</span><span class="w">
+    </span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
 
 <h3 id="graph">Graph</h3>
 
 <p>After generating a dataset according to those rules, we can view market prices and quantities in a scatter plot:</p>
 
-<pre><code class="language-{r}">ymin &lt;- min(data$P) - 5
-ymax &lt;- max(data$P) + 5
-data %&gt;% 
-    ggplot(aes(Q, P)) + 
-    geom_point() + 
-    ylim(ymin, ymax) + 
-    theme_wsj() 
-</code></pre>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">ymin</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">min</span><span class="p">(</span><span class="n">data</span><span class="o">$</span><span class="n">P</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">5</span><span class="w">
+</span><span class="n">ymax</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">max</span><span class="p">(</span><span class="n">data</span><span class="o">$</span><span class="n">P</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">5</span><span class="w">
+</span><span class="n">data</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+    </span><span class="n">ggplot</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span><span class="w"> </span><span class="n">P</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+    </span><span class="n">geom_point</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+    </span><span class="n">ylim</span><span class="p">(</span><span class="n">ymin</span><span class="p">,</span><span class="w"> </span><span class="n">ymax</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+    </span><span class="n">theme_wsj</span><span class="p">()</span><span class="w"> 
+</span></code></pre></div></div>
 
-<p>If we lock in some value of $Z_{demand}$ and $Z_{supply}$, we can easily see how supply and demand intersect.</p>
+<p><img src="/assets/images/sem-scatter.png" alt="scatter" width="500" /></p>
 
-<pre><code class="language-{r}">z1_fixed1 &lt;- data$Z_Supply[1]
-z1_fixed2 &lt;- data$Z_Supply[2]
-z1_fixed3 &lt;- data$Z_Supply[3]
+<p>If we lock in some value of \(Z_{demand}\) and \(Z_{supply}\), we can easily see how supply and demand intersect.</p>
 
-z2_fixed1 &lt;- data$Z_Demand[1]
-z2_fixed2 &lt;- data$Z_Demand[2]
-z2_fixed3 &lt;- data$Z_Demand[3]
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">z1_fixed1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">data</span><span class="o">$</span><span class="n">Z_Supply</span><span class="p">[</span><span class="m">1</span><span class="p">]</span><span class="w">
+</span><span class="n">z1_fixed2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">data</span><span class="o">$</span><span class="n">Z_Supply</span><span class="p">[</span><span class="m">2</span><span class="p">]</span><span class="w">
+</span><span class="n">z1_fixed3</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">data</span><span class="o">$</span><span class="n">Z_Supply</span><span class="p">[</span><span class="m">3</span><span class="p">]</span><span class="w">
 
-data$Qs &lt;- 1:dim(data)[1]
-data$Ps1 &lt;- data$Qs + 2 * z1_fixed1
-data$Ps2 &lt;- data$Qs + 2 * z1_fixed2
-data$Ps3 &lt;- data$Qs + 2 * z1_fixed3
+</span><span class="n">z2_fixed1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">data</span><span class="o">$</span><span class="n">Z_Demand</span><span class="p">[</span><span class="m">1</span><span class="p">]</span><span class="w">
+</span><span class="n">z2_fixed2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">data</span><span class="o">$</span><span class="n">Z_Demand</span><span class="p">[</span><span class="m">2</span><span class="p">]</span><span class="w">
+</span><span class="n">z2_fixed3</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">data</span><span class="o">$</span><span class="n">Z_Demand</span><span class="p">[</span><span class="m">3</span><span class="p">]</span><span class="w">
 
-data$Qd &lt;- data$Qs
-data$Pd1 &lt;- 100 - data$Qd + 2 * z2_fixed1
-data$Pd2 &lt;- 100 - data$Qd + 2 * z2_fixed2
-data$Pd3 &lt;- 100 - data$Qd + 2 * z2_fixed3
+</span><span class="n">data</span><span class="o">$</span><span class="n">Qs</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">1</span><span class="o">:</span><span class="nf">dim</span><span class="p">(</span><span class="n">data</span><span class="p">)[</span><span class="m">1</span><span class="p">]</span><span class="w">
+</span><span class="n">data</span><span class="o">$</span><span class="n">Ps1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">data</span><span class="o">$</span><span class="n">Qs</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">z1_fixed1</span><span class="w">
+</span><span class="n">data</span><span class="o">$</span><span class="n">Ps2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">data</span><span class="o">$</span><span class="n">Qs</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">z1_fixed2</span><span class="w">
+</span><span class="n">data</span><span class="o">$</span><span class="n">Ps3</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">data</span><span class="o">$</span><span class="n">Qs</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">z1_fixed3</span><span class="w">
 
-xmin &lt;- min(data$Q)
-xmax &lt;- max(data$Q)
-ymin &lt;- min(data$P) - 5
-ymax &lt;- max(data$P) + 5
-data %&gt;% 
-    ggplot(aes(Q, P)) + 
-    geom_point() + 
-    geom_line(aes(Qs, Ps1), color = "red") + 
-    geom_line(aes(Qd, Pd1), color = "blue") + 
-    xlim(xmin, xmax) + 
-    ylim(ymin, ymax) + 
-    theme_wsj() + 
-    labs(
-        caption = paste0(
-            ""            
-        )
-    )
-</code></pre>
+</span><span class="n">data</span><span class="o">$</span><span class="n">Qd</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">data</span><span class="o">$</span><span class="n">Qs</span><span class="w">
+</span><span class="n">data</span><span class="o">$</span><span class="n">Pd1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">data</span><span class="o">$</span><span class="n">Qd</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">z2_fixed1</span><span class="w">
+</span><span class="n">data</span><span class="o">$</span><span class="n">Pd2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">data</span><span class="o">$</span><span class="n">Qd</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">z2_fixed2</span><span class="w">
+</span><span class="n">data</span><span class="o">$</span><span class="n">Pd3</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">data</span><span class="o">$</span><span class="n">Qd</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">z2_fixed3</span><span class="w">
+
+</span><span class="n">xmin</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">min</span><span class="p">(</span><span class="n">data</span><span class="o">$</span><span class="n">Q</span><span class="p">)</span><span class="w">
+</span><span class="n">xmax</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">max</span><span class="p">(</span><span class="n">data</span><span class="o">$</span><span class="n">Q</span><span class="p">)</span><span class="w">
+</span><span class="n">ymin</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">min</span><span class="p">(</span><span class="n">data</span><span class="o">$</span><span class="n">P</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">5</span><span class="w">
+</span><span class="n">ymax</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">max</span><span class="p">(</span><span class="n">data</span><span class="o">$</span><span class="n">P</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">5</span><span class="w">
+</span><span class="n">data</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+    </span><span class="n">ggplot</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span><span class="w"> </span><span class="n">P</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+    </span><span class="n">geom_point</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+    </span><span class="n">geom_line</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">Qs</span><span class="p">,</span><span class="w"> </span><span class="n">Ps1</span><span class="p">),</span><span class="w"> </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"red"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+    </span><span class="n">geom_line</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">Qd</span><span class="p">,</span><span class="w"> </span><span class="n">Pd1</span><span class="p">),</span><span class="w"> </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"blue"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+    </span><span class="n">xlim</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span><span class="w"> </span><span class="n">xmax</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+    </span><span class="n">ylim</span><span class="p">(</span><span class="n">ymin</span><span class="p">,</span><span class="w"> </span><span class="n">ymax</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+    </span><span class="n">theme_wsj</span><span class="p">()</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/images/sem-scatter-line.png" alt="lines" width="500" /></p>
 
 <h3 id="intuition-for-first-stage">Intuition for First Stage</h3>
 
@@ -301,28 +309,25 @@ data %&gt;%
 
 \[P = \beta_1 Q + \beta_2 Z_{demand}\]
 
-<p>We will get a biased estimate for $\beta_1$. Intuitively, this is because price and quantity were determined in equilibrium. In other words, conditional on the exogenous supply and demand shifters ($Z_{demand}$ and $Z_{supply}$), there is no variation in price or quantity.</p>
+<p>We will get a biased estimate for \(\beta_1\). Intuitively, this is because price and quantity were determined in equilibrium. In other words, conditional on the exogenous supply and demand shifters (\(Z_{demand}\) and \(Z_{supply}\)), there is no variation in price or quantity.</p>
 
-<p>Instead, we will rely on exogenous variation that only impacts quantity through supply, in this case the supply shifters $Z_{supply}$. We can think of this as using exogenous shifts in the \textcolor{red}{red} line to help determine the slope of the \textcolor{blue}{blue} line.</p>
+<p>Instead, we will rely on exogenous variation that only impacts quantity through supply, in this case the supply shifters \(Z_{supply}\). We can think of this as using exogenous shifts in the \(\textcolor{red}{red}\) line to help determine the slope of the \(\textcolor{blue}{blue}\) line.</p>
 
-<pre><code class="language-{r}">data %&gt;% 
-    ggplot(aes(Q, P)) + 
-    geom_point() + 
-    geom_line(aes(Qs, Ps1), color = "red") + 
-    geom_line(aes(Qs, Ps2), color = "red", linetype = "dashed") + 
-    geom_line(aes(Qs, Ps3), color = "red", linetype = "dashed") + 
-    geom_line(aes(Qd, Pd1), color = "blue") + 
-    theme_wsj() + 
-    xlim(xmin, xmax) + 
-    ylim(ymin, ymax) + 
-    labs(
-        caption = paste0(
-            ""            
-        )
-    )
-</code></pre>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">data</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+    </span><span class="n">ggplot</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span><span class="w"> </span><span class="n">P</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+    </span><span class="n">geom_point</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+    </span><span class="n">geom_line</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">Qs</span><span class="p">,</span><span class="w"> </span><span class="n">Ps1</span><span class="p">),</span><span class="w"> </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"red"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+    </span><span class="n">geom_line</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">Qs</span><span class="p">,</span><span class="w"> </span><span class="n">Ps2</span><span class="p">),</span><span class="w"> </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"red"</span><span class="p">,</span><span class="w"> </span><span class="n">linetype</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"dashed"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+    </span><span class="n">geom_line</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">Qs</span><span class="p">,</span><span class="w"> </span><span class="n">Ps3</span><span class="p">),</span><span class="w"> </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"red"</span><span class="p">,</span><span class="w"> </span><span class="n">linetype</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"dashed"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+    </span><span class="n">geom_line</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">Qd</span><span class="p">,</span><span class="w"> </span><span class="n">Pd1</span><span class="p">),</span><span class="w"> </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"blue"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+    </span><span class="n">xlim</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span><span class="w"> </span><span class="n">xmax</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+    </span><span class="n">ylim</span><span class="p">(</span><span class="n">ymin</span><span class="p">,</span><span class="w"> </span><span class="n">ymax</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+    </span><span class="n">theme_wsj</span><span class="p">()</span><span class="w"> 
+</span></code></pre></div></div>
 
-<p>Finally, should we include the demand shifters in the first equation? Intuitively, I think we have to include both demand and supply shifters to help isolate which level of the curves we are looking at. For example, for a given supply curve, we still need to include demand factors to let us pinpoint where we expect the levels to intersect. In other words, we need to know the external factors that are affecting the \textcolor{red}{red} and \textcolor{blue}{blue} lines. As shown above, in equilibrium, those are the only factors for price and quantity.</p>
+<p><img src="/assets/images/sem-scatter-shifters.png" alt="lines" width="500" /></p>
+
+<p>Finally, why is that that we include the demand shifters in the first equation? Intuitively, this helps to isolate which level of the curves we are looking at. For example, for a given supply curve, we still need to include demand factors to let us pinpoint where we expect the levels to intersect. In other words, we need to know the external factors that are affecting the \(\textcolor{red}{red}\) and \(\textcolor{blue}{blue}\) lines. As shown above, in equilibrium, those are the only factors for price and quantity.</p>
 
 <h3 id="regression-results">Regression Results</h3>
 
@@ -334,13 +339,13 @@ data %&gt;%
     P_{demand} &amp;= 100 - Q_{demand} + 2Z_{demand} + u_{demand}
 \end{aligned}\]
 
-<h4 id="2sls---only-supply-shifters-in-first-stage">2SLS - Only Supply Shifters in First Stage</h4>
+<h4 id="only-supply-shifters-in-first-stage">Only Supply Shifters in First Stage</h4>
 
 <p>If we only include supply shifters in the first stage regression, i.e.</p>
 
 \[Q = \alpha_1 Z_{supply} + u\]
 
-<p>And use the predicted values, $\hat{Q}$ in the second stage regression:</p>
+<p>And use the predicted values, \(\hat{Q}\) in the second stage regression:</p>
 
 \[P = \beta_1 \hat{Q} + \beta_2 Z_{demand} + e\]
 
@@ -356,13 +361,15 @@ fit_bias &lt;- lm(P ~ `Q Predicted (only supply)` + Z_Demand, data = data)
 
 <p>We see here that these estimates are incorrect based on what we know to be true.</p>
 
-<h4 id="2sls---all-exogenous-variables-in-first-stage">2SLS - All Exogenous Variables in First Stage</h4>
+<p><img src="/assets/images/biased-sem.png" alt="scatter" width="500" /></p>
+
+<h4 id="all-exogenous-variables-in-first-stage">All Exogenous Variables in First Stage</h4>
 
 <p>If we now include all exogenous variables in the first stage regression, i.e.</p>
 
 \[Q = \alpha_1 Z_{supply} + \alpha_2 Z_{demand} + u\]
 
-<p>And use these new predicted values, $\widetilde{Q}$ in the second stage regression:</p>
+<p>And use these new predicted values, \(\widetilde{Q}\) in the second stage regression:</p>
 
 \[P = \beta_1 \widetilde{Q} + \beta_2 Z_{demand} + e\]
 
@@ -374,8 +381,9 @@ data$`Q Predicted (all exogenous)` &lt;- predict(first_stage_fit)
 
 # second stage 
 fit &lt;- lm(P ~ `Q Predicted (all exogenous)` + Z_Demand, data = data)
-stargazer::stargazer(fit)
 </code></pre>
+
+<p><img src="/assets/images/true-sem.png" alt="scatter" width="500" /></p>
 
 <p>In this case, using all exogenous variables in the first stage allows us to recover the “true” demand parameters on quantity and the demand shifter.</p>
 
@@ -525,6 +533,27 @@ stargazer::stargazer(fit)
   </div>
 
   
+    <div class="row">
+      <div class="row mt-4" id="disqus_thread"></div>
+<script>
+  var disqus_config = function () {
+    this.page.url = 'https://sparklingcorrelation.com/2021/05/07/sem-iv.html';
+    this.page.identifier = 'https://sparklingcorrelation.com/2021/05/07/sem-iv.html';
+  };
+
+  (function() {
+    var d = document, s = d.createElement('script');
+
+    s.src = 'https://sparklingcorrelation.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+    </div>
+  
       
 </div>
       </main>
@@ -602,6 +631,17 @@ stargazer::stargazer(fit)
 
     
     
+    
+      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-138925131-2"></script>
+<script>
+  window['ga-disable-UA-138925131-2'] = window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1";
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-138925131-2');
+</script>
+
     
   </body>
 </html>
