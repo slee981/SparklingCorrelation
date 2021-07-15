@@ -1,8 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2021-07-14T22:00:10-05:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Sparkling Correlation</title><subtitle>A blog on data, prediction, and causal inference.</subtitle><entry><title type="html">Networks (Part I): Notation</title><link href="http://localhost:4000/networks/2021/07/14/networks-notation.html" rel="alternate" type="text/html" title="Networks (Part I): Notation" /><published>2021-07-14T00:00:00-05:00</published><updated>2021-07-14T00:00:00-05:00</updated><id>http://localhost:4000/networks/2021/07/14/networks-notation</id><content type="html" xml:base="http://localhost:4000/networks/2021/07/14/networks-notation.html">&lt;h2 id=&quot;audience&quot;&gt;Audience&lt;/h2&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2021-07-15T16:40:34-05:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Sparkling Correlation</title><subtitle>A blog on data, prediction, and causal inference.</subtitle><entry><title type="html">Networks: Notation</title><link href="http://localhost:4000/networks/2021/07/14/networks-notation.html" rel="alternate" type="text/html" title="Networks: Notation" /><published>2021-07-14T00:00:00-05:00</published><updated>2021-07-14T00:00:00-05:00</updated><id>http://localhost:4000/networks/2021/07/14/networks-notation</id><content type="html" xml:base="http://localhost:4000/networks/2021/07/14/networks-notation.html">&lt;h2 id=&quot;audience&quot;&gt;Audience&lt;/h2&gt;
 
 &lt;p&gt;I assume you know what a network is, some areas where they appear (e.g. social media connection graphs, airline routes, supply chain logistics, etc.), and are familiar with or curious about formalizing these relationships mathematically.&lt;/p&gt;
 
 &lt;p&gt;Consider this post more of a “cheatsheet” rather than a tutorial. This draws heavily from the textbook “Social and Economic Networks” by Matthew O. Jackson, although the notation is fairly standard and similar to what you’d see in a book on algorithms.&lt;/p&gt;
+
+&lt;h2 id=&quot;overview&quot;&gt;Overview&lt;/h2&gt;
+
+&lt;p&gt;Causal inference on network structures is notoriously difficult. This is due to the complicated web of interactions, and the resulting spillovers (i.e. externalities). For example, suppose you are studying a supply chain fulfilment network, and are wondering which facility or facilities, if upgraded, would improve the network’s capacity the most. Because of the interconnected routing decisions, the answer is not at all obvious.&lt;/p&gt;
+
+&lt;p&gt;This post will (hopefully) kick off a series of posts that explore how to measure and analyze network structures.&lt;/p&gt;
 
 &lt;h2 id=&quot;setup-and-definitions&quot;&gt;Setup and Definitions&lt;/h2&gt;
 
@@ -16,11 +22,13 @@
 
 &lt;h3 id=&quot;edges&quot;&gt;Edges&lt;/h3&gt;
 
-&lt;p&gt;Nodes are connected by &lt;strong&gt;edges&lt;/strong&gt;. Edges can represent a friendship between two people, a link between webpages, and so on. Importantly, edges can be either &lt;strong&gt;directed&lt;/strong&gt; or &lt;strong&gt;undirected&lt;/strong&gt;. In a directed network, the order matters, and relationships are not reciprocal - so some webpage A can link to webpage B, but webpage B may not link to webpage A. By contrast, in an undirected network these relationships are symmetric.&lt;/p&gt;
+&lt;p&gt;Nodes are connected by &lt;strong&gt;edges&lt;/strong&gt;. Edges can represent a friendship between two people, a link between webpages, and so on. Importantly, edges can be either &lt;strong&gt;directed&lt;/strong&gt; or &lt;strong&gt;undirected&lt;/strong&gt;. In a directed network, the order matters, and relationships are not necessarily reciprocal - so some webpage A can link to webpage B, but webpage B might not link to webpage A. By contrast, in an undirected network these relationships are symmetric.&lt;/p&gt;
 
 &lt;p&gt;Additionally, edges may be &lt;strong&gt;weighted&lt;/strong&gt; or &lt;strong&gt;unweighted&lt;/strong&gt;. An unweighted edge represents a simple binary connection, whereas a weighted edge may represent some magnitude of the relationship, for example, the amount of money traded between two banks.&lt;/p&gt;
 
-&lt;h3 id=&quot;matrix-representation&quot;&gt;Matrix Representation&lt;/h3&gt;
+&lt;h3 id=&quot;graph-representations&quot;&gt;Graph Representations&lt;/h3&gt;
+
+&lt;h4 id=&quot;matrix-notation&quot;&gt;Matrix Notation&lt;/h4&gt;
 
 &lt;p&gt;The figure above shows an undirected network graph with four (4) nodes and three unweighted edges. We can represent this graph, \(g\), in matrix form as follows:&lt;/p&gt;
 
@@ -33,18 +41,82 @@
 
 &lt;p&gt;By convention, the edge connecting node 1 to node 4 is represented by a “1” in the first row, fourth column. Similarly, the edge representing the connection from node 4 back to node 1 is captured by a “1” in the fourth row, first column. Note also that in this case, “self-edges” are denoted as “0” i.e. we don’t count an edge from a node back to itself. This choice is unimportant for this example, but may matter depending on your specific use case.&lt;/p&gt;
 
-&lt;p&gt;The figure below shows a directed network with weighted eges.&lt;/p&gt;
+&lt;p&gt;The figure below shows a directed network with weighted eges. For example, we can imagine this as a group of friends settling a bet.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/images/network-weighted-directed.svg&quot; alt=&quot;scatter&quot; width=&quot;150&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;And can represent this in matrix form as follows. For example, we can imagine this as a group of friends settling a bet.&lt;/p&gt;
+&lt;p&gt;Similar to the first graph, we can represent this in matrix form as follows.&lt;/p&gt;
 
 \[g = \begin{bmatrix}
-0 &amp;amp; 0 &amp;amp; 0 &amp;amp; 9 \\
-8 &amp;amp; 0 &amp;amp; 7 &amp;amp; 0 \\
-0 &amp;amp; 0 &amp;amp; 0 &amp;amp; 0 \\ 
-0 &amp;amp; 0 &amp;amp; 0 &amp;amp; 0
-\end{bmatrix}\]</content><author><name>Stephen Lee</name></author><category term="Networks" /><category term="Networks" /><summary type="html">Audience</summary></entry><entry><title type="html">SEM Estimation by 2SLS</title><link href="http://localhost:4000/instrumental%20variables/2021/05/07/sem-iv.html" rel="alternate" type="text/html" title="SEM Estimation by 2SLS" /><published>2021-05-07T00:00:00-05:00</published><updated>2021-05-07T00:00:00-05:00</updated><id>http://localhost:4000/instrumental%20variables/2021/05/07/sem-iv</id><content type="html" xml:base="http://localhost:4000/instrumental%20variables/2021/05/07/sem-iv.html">&lt;h2 id=&quot;overview&quot;&gt;Overview&lt;/h2&gt;
+    0 &amp;amp; 0 &amp;amp; 0 &amp;amp; 9 \\
+    8 &amp;amp; 0 &amp;amp; 7 &amp;amp; 0 \\
+    0 &amp;amp; 0 &amp;amp; 0 &amp;amp; 0 \\ 
+    0 &amp;amp; 0 &amp;amp; 0 &amp;amp; 0
+\end{bmatrix}\]</content><author><name>Stephen Lee</name></author><category term="Networks" /><category term="Networks" /><summary type="html">Audience</summary></entry><entry><title type="html">What Is Potential Outcomes</title><link href="http://localhost:4000/potential%20outcomes/2021/07/13/what-is-potential-outcomes.html" rel="alternate" type="text/html" title="What Is Potential Outcomes" /><published>2021-07-13T00:00:00-05:00</published><updated>2021-07-13T00:00:00-05:00</updated><id>http://localhost:4000/potential%20outcomes/2021/07/13/what-is-potential-outcomes</id><content type="html" xml:base="http://localhost:4000/potential%20outcomes/2021/07/13/what-is-potential-outcomes.html">&lt;h2 id=&quot;overview&quot;&gt;Overview&lt;/h2&gt;
+&lt;p&gt;Potential outcomes is a set of techniques and tools for estimating the likely results of a particular action. More specifically, potential outcomes provides a methodology for assessing the effect of a treatment (aka intervention) when certain assumptions are believed to be true. Notably, this approach is often applied to observational data in fields like economics, epidemiology, or sociology, where many experiments would be prohibitedly expensive or unethical.&lt;/p&gt;
+
+&lt;p&gt;While the randomized control trial is often considered a benchmark for causal inference,&lt;sup id=&quot;fnref:1&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; practitioners of potential outcomes argue that these methods can be naturally applied to other settings as well. Intuitively, the belief is that since we humans seem able to draw useful inference about the world without rigorous experiment (e.g. taking an asprine will help my headache because it helped last time), formalizing the process of observational based inference can yield valuable insight.&lt;/p&gt;
+
+&lt;h2 id=&quot;philosophy&quot;&gt;Philosophy&lt;/h2&gt;
+&lt;p&gt;One way to think about cause and effect is as a comparison between outcomes: what would be the difference in my outcome if I receive the treatment, compared to if I do not receive the treatment? In other words, what is the difference between the &lt;em&gt;potential outcomes&lt;/em&gt;? Central to this is the missing data problem, also referred to as the fundamental problem of causal inference. In short, (for a given unit):&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;You can only either observe the outcome after treatment, or after no-treatment.&lt;/p&gt;
+
+  &lt;p&gt;Since we cannot go back in time, we cannot observe both, and hence, we cannot measure true effects at an individual level of analysis.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;The workaround for potential outcomes is to focus on treatment groups to estimate aggregated effects, as opposed to individual level effects. For example, we may measure the average treatment effect (ATE) or the 25th percentile treatement effect, but we cannot measure Bob or Ann’s specific treatment effect.&lt;/p&gt;
+
+&lt;p&gt;Note, there is another popular approach to thinking through causal inference problems often referred to as structural modeling. For example, the Structural Causal Model (SCM) popularized by Judea Pearl requires statement of all relevant variables, and their potential interactions. In his words, one must specify, “who talks to whom”. With this, one can then utilize graphical abstractions of these relationships in the form of directed acyclic graphs (DAGs), and follow certain proceedural rules to discover if your causal question can be estimated with the data you have i.e. are you missing observation of any variables that are critical to the estimation. Beyond this, there is a long tradition of structural economic modeling, and in particular with simultaneously determined relationships like supply and demand. This will likely become a separate blog post, but for now, this is outside the scope of this post.&lt;/p&gt;
+
+&lt;h2 id=&quot;assumptions&quot;&gt;Assumptions&lt;/h2&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Causal conclusions are only as valid as the causal assumptions upon which they rest.&lt;/p&gt;
+
+  &lt;p&gt;– Judea Pearl&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;What makes assumptions so tricky is that in many cases you cannot test them for validity. For an analysis of potential outcomes, two main categories of assumptions are needed:&lt;/p&gt;
+
+&lt;h3 id=&quot;1-stable-unit-treatment-value-assumption-sutva&quot;&gt;(1) Stable Unit Treatment Value Assumption (SUTVA)&lt;/h3&gt;
+&lt;p&gt;According to Donald Rubin (who is largely credited with shaping this literature), this assumption requires:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;There are no individual spillovers (i.e. no externalities).&lt;/li&gt;
+  &lt;li&gt;There is no hidden variation in the treatment e.g. strength or adherence.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;For example, if studying the effect of graded homework on student performance at a university, there could likely be spillovers in the form of peer effects: a “treatment” classroom may impact student performance in a “control” classroom if friends from both groups study together.&lt;/p&gt;
+
+&lt;p&gt;Further, this assumption also requires only one “strength” of treatment. To extend the same example, if the treatment is to assign graded homeworks, compared to a control where students do not have their homework assignments graded, each classroom in the treatment group must grade homework assignments with the same frequency. In other words, if one teacher in the treatment group returns graded assignments every week, while another teacher in the treatment group only returns graded assignments once a month, the final causal inference would likely be conflated.&lt;/p&gt;
+
+&lt;p&gt;When these conditions are met, the causal analysis is greatly simplified. Unfortunately however, these are rather strong assumptions and often may not be plausible. Fortunately, there is a growing body of research to best handle estimation when these assumptions are relaxed.&lt;/p&gt;
+
+&lt;h3 id=&quot;2-assignment-mechanism&quot;&gt;(2) Assignment Mechanism&lt;/h3&gt;
+&lt;p&gt;When comparing a group that received treatment to a group that didn’t receive treatment, we need to know (or make an assumption) about why certain individuals were assigned to the treatment group, while others were not.&lt;/p&gt;
+
+&lt;p&gt;In the simplest case, this assignment is random (as in a clinical trial) and unconfounded insofar as assignment does not depend on the potential outcomes. In other words, if all of the individuals that received treatment were given it precicely because they had the most to benefit, a straight forward comparison between the outcomes of the treatment and control groups woudl not represent a causal effect of the treatment.&lt;/p&gt;
+
+&lt;p&gt;For example, one may wonder what is the causal effect of attending and graduating from a university. Since it would be unethical, costly, and infeasible in a reasonable timeline, we do not perform this experiment. Thus, we may try to use observational data on students that graduated from university and compare their outcomes to students that didn’t attend. In this case, the causal inference is complicated by the fact that the decision to attend or not attend college is likely incluenced by the perceived benefit of attending. Thus, the treatment (attend college) may depend on the potential outcome (do you expect to be better or worse off if you attend?).&lt;/p&gt;
+
+&lt;p&gt;Various tools have been developed to handle cases where the assignment is not random or the distribution of the assignment is unknown. For these, techniques rapidly become more and more sophisticated, and assumptions become more and more layered. Overall, estimation can still occur, but it’s much more difficult.&lt;/p&gt;
+
+&lt;h2 id=&quot;resources&quot;&gt;Resources&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;em&gt;Causal Inference for Statistics, Social, and Biomedical Sciences&lt;/em&gt;. Imbens G. and Rubin D.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Causal Inference: The Mixtape&lt;/em&gt;. Cunningham S.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;footnotes&quot;&gt;Footnotes&lt;/h2&gt;
+
+&lt;div class=&quot;footnotes&quot; role=&quot;doc-endnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:1&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;Consider, as evidence, that this is the requirement for a drug to pass FDA inspection. &lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;</content><author><name>Stephen Lee</name></author><category term="Potential Outcomes" /><category term="Potential Outcomes" /><summary type="html">Overview Potential outcomes is a set of techniques and tools for estimating the likely results of a particular action. More specifically, potential outcomes provides a methodology for assessing the effect of a treatment (aka intervention) when certain assumptions are believed to be true. Notably, this approach is often applied to observational data in fields like economics, epidemiology, or sociology, where many experiments would be prohibitedly expensive or unethical.</summary></entry><entry><title type="html">SEM Estimation by 2SLS</title><link href="http://localhost:4000/instrumental%20variables/2021/07/12/sem-iv.html" rel="alternate" type="text/html" title="SEM Estimation by 2SLS" /><published>2021-07-12T00:00:00-05:00</published><updated>2021-07-12T00:00:00-05:00</updated><id>http://localhost:4000/instrumental%20variables/2021/07/12/sem-iv</id><content type="html" xml:base="http://localhost:4000/instrumental%20variables/2021/07/12/sem-iv.html">&lt;h2 id=&quot;overview&quot;&gt;Overview&lt;/h2&gt;
 
 &lt;p&gt;The goal is to:&lt;/p&gt;
 
