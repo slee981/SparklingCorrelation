@@ -1,5 +1,5 @@
 ---
-title: "Networks: Notation"
+title: "Networks (Part I) - Notation"
 author: Stephen Lee
 layout: post
 
@@ -17,7 +17,7 @@ Consider this post more of a "cheatsheet" rather than a tutorial. This draws hea
 
 ## Overview
 
-Causal inference on network structures is notoriously difficult. This is due to the complicated web of interactions, and the resulting spillovers (i.e. externalities). For example, suppose you are studying a supply chain fulfilment network, and are wondering which facility or facilities, if upgraded, would improve the network's capacity the most. Because of the interconnected routing decisions, the answer is not at all obvious. 
+Causal inference on network structures is notoriously difficult. This is due to the complicated web of interactions, and the resulting spillovers (i.e. externalities) violate assumptions for the "potential outcomes" approach to inference ([click for more]({% post_url 2021-07-13-what-is-potential-outcomes %})). For example, suppose you are studying a supply chain fulfilment network, and are wondering which facility or facilities, if upgraded, would improve the network's capacity the most. Because of the interconnected routing decisions, the answer is not at all obvious. 
 
 This post will (hopefully) kick off a series of posts that explore how to measure and analyze network structures. 
 
@@ -37,7 +37,9 @@ Nodes are connected by **edges**. Edges can represent a friendship between two p
 
 Additionally, edges may be **weighted** or **unweighted**. An unweighted edge represents a simple binary connection, whereas a weighted edge may represent some magnitude of the relationship, for example, the amount of money traded between two banks. 
 
-### Graph Representations
+### Network Graphs
+
+Given a network, there are multiple ways to express it, and which one you choose depends on your use case. For most of what follows, I will focus on the matrix representation, as it naturally lends itself to matrix algebra, which will be useful later on. However, where there are very few edges relative to the number of nodes (i.e. the network is *sparce*), a matrix will likely not be a very efficient way of storing or processing the information. 
 
 #### Matrix Notation 
 
@@ -69,7 +71,42 @@ g = \begin{bmatrix}
 \end{bmatrix} 
 $$
 
+#### Other Notation
 
+The following notations are often used in computational settings when implementing algorithms on graphs (e.g. depth-first search). Since that falls outside the scope of this post, I will only briefly mention their representations for my own future reference. 
 
+##### Adjacency List 
 
+One popular form of describing graphs for computation problems is via "adjacency lists". Here we represent each edge from node $$i$$ to node $$j$$ as a list (oftentime a linked list) that stems from the source node. For example, our original unweighted and undirected graph could have the following form: 
 
+```python
+# example with Python3 syntax
+graph = {
+    1: [2, 4], 
+    2: [1, 3], 
+    3: [2], 
+    4: [1]
+}
+```
+
+##### List of Edges 
+
+Similar to the adjacency list, another way of describing a network is simply as a list of edges, so to again use the first network above, this representation would be: 
+
+```python 
+# note Python uses an exclusive stop value
+# in the "range" function
+nodes = list(range(1, 5)) 
+edges = [
+    (1, 2), (1, 4), 
+    (2, 1), (2, 3), 
+    (3, 2), 
+    (4, 1)
+]
+
+graph = (nodes, edges)
+```
+
+## Conclusion 
+
+I plan to use these definitions and notation in future posts. 

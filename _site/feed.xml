@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2021-07-15T16:40:34-05:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Sparkling Correlation</title><subtitle>A blog on data, prediction, and causal inference.</subtitle><entry><title type="html">Networks: Notation</title><link href="http://localhost:4000/networks/2021/07/14/networks-notation.html" rel="alternate" type="text/html" title="Networks: Notation" /><published>2021-07-14T00:00:00-05:00</published><updated>2021-07-14T00:00:00-05:00</updated><id>http://localhost:4000/networks/2021/07/14/networks-notation</id><content type="html" xml:base="http://localhost:4000/networks/2021/07/14/networks-notation.html">&lt;h2 id=&quot;audience&quot;&gt;Audience&lt;/h2&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2021-07-15T21:46:37-05:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Sparkling Correlation</title><subtitle>A blog on data, prediction, and causal inference.</subtitle><entry><title type="html">Networks (Part I) - Notation</title><link href="http://localhost:4000/networks/2021/07/14/networks-notation.html" rel="alternate" type="text/html" title="Networks (Part I) - Notation" /><published>2021-07-14T00:00:00-05:00</published><updated>2021-07-14T00:00:00-05:00</updated><id>http://localhost:4000/networks/2021/07/14/networks-notation</id><content type="html" xml:base="http://localhost:4000/networks/2021/07/14/networks-notation.html">&lt;h2 id=&quot;audience&quot;&gt;Audience&lt;/h2&gt;
 
 &lt;p&gt;I assume you know what a network is, some areas where they appear (e.g. social media connection graphs, airline routes, supply chain logistics, etc.), and are familiar with or curious about formalizing these relationships mathematically.&lt;/p&gt;
 
@@ -6,7 +6,7 @@
 
 &lt;h2 id=&quot;overview&quot;&gt;Overview&lt;/h2&gt;
 
-&lt;p&gt;Causal inference on network structures is notoriously difficult. This is due to the complicated web of interactions, and the resulting spillovers (i.e. externalities). For example, suppose you are studying a supply chain fulfilment network, and are wondering which facility or facilities, if upgraded, would improve the network’s capacity the most. Because of the interconnected routing decisions, the answer is not at all obvious.&lt;/p&gt;
+&lt;p&gt;Causal inference on network structures is notoriously difficult. This is due to the complicated web of interactions, and the resulting spillovers (i.e. externalities) violate assumptions for the “potential outcomes” approach to inference (&lt;a href=&quot;/potential%20outcomes/2021/07/13/what-is-potential-outcomes.html&quot;&gt;click for more&lt;/a&gt;). For example, suppose you are studying a supply chain fulfilment network, and are wondering which facility or facilities, if upgraded, would improve the network’s capacity the most. Because of the interconnected routing decisions, the answer is not at all obvious.&lt;/p&gt;
 
 &lt;p&gt;This post will (hopefully) kick off a series of posts that explore how to measure and analyze network structures.&lt;/p&gt;
 
@@ -26,7 +26,9 @@
 
 &lt;p&gt;Additionally, edges may be &lt;strong&gt;weighted&lt;/strong&gt; or &lt;strong&gt;unweighted&lt;/strong&gt;. An unweighted edge represents a simple binary connection, whereas a weighted edge may represent some magnitude of the relationship, for example, the amount of money traded between two banks.&lt;/p&gt;
 
-&lt;h3 id=&quot;graph-representations&quot;&gt;Graph Representations&lt;/h3&gt;
+&lt;h3 id=&quot;network-graphs&quot;&gt;Network Graphs&lt;/h3&gt;
+
+&lt;p&gt;Given a network, there are multiple ways to express it, and which one you choose depends on your use case. For most of what follows, I will focus on the matrix representation, as it naturally lends itself to matrix algebra, which will be useful later on. However, where there are very few edges relative to the number of nodes (i.e. the network is &lt;em&gt;sparce&lt;/em&gt;), a matrix will likely not be a very efficient way of storing or processing the information.&lt;/p&gt;
 
 &lt;h4 id=&quot;matrix-notation&quot;&gt;Matrix Notation&lt;/h4&gt;
 
@@ -52,7 +54,45 @@
     8 &amp;amp; 0 &amp;amp; 7 &amp;amp; 0 \\
     0 &amp;amp; 0 &amp;amp; 0 &amp;amp; 0 \\ 
     0 &amp;amp; 0 &amp;amp; 0 &amp;amp; 0
-\end{bmatrix}\]</content><author><name>Stephen Lee</name></author><category term="Networks" /><category term="Networks" /><summary type="html">Audience</summary></entry><entry><title type="html">What Is Potential Outcomes</title><link href="http://localhost:4000/potential%20outcomes/2021/07/13/what-is-potential-outcomes.html" rel="alternate" type="text/html" title="What Is Potential Outcomes" /><published>2021-07-13T00:00:00-05:00</published><updated>2021-07-13T00:00:00-05:00</updated><id>http://localhost:4000/potential%20outcomes/2021/07/13/what-is-potential-outcomes</id><content type="html" xml:base="http://localhost:4000/potential%20outcomes/2021/07/13/what-is-potential-outcomes.html">&lt;h2 id=&quot;overview&quot;&gt;Overview&lt;/h2&gt;
+\end{bmatrix}\]
+
+&lt;h4 id=&quot;other-notation&quot;&gt;Other Notation&lt;/h4&gt;
+
+&lt;p&gt;The following notations are often used in computational settings when implementing algorithms on graphs (e.g. depth-first search). Since that falls outside the scope of this post, I will only briefly mention their representations for my own future reference.&lt;/p&gt;
+
+&lt;h5 id=&quot;adjacency-list&quot;&gt;Adjacency List&lt;/h5&gt;
+
+&lt;p&gt;One popular form of describing graphs for computation problems is via “adjacency lists”. Here we represent each edge from node \(i\) to node \(j\) as a list (oftentime a linked list) that stems from the source node. For example, our original unweighted and undirected graph could have the following form:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# example with Python3 syntax
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;graph&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; 
+    &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; 
+    &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; 
+    &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h5 id=&quot;list-of-edges&quot;&gt;List of Edges&lt;/h5&gt;
+
+&lt;p&gt;Similar to the adjacency list, another way of describing a network is simply as a list of edges, so to again use the first network above, this representation would be:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# note Python uses an exclusive stop value
+# in the &quot;range&quot; function
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nodes&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;list&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;range&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;edges&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; 
+    &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; 
+    &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; 
+    &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;graph&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nodes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;edges&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;I plan to use these definitions and notation in future posts.&lt;/p&gt;</content><author><name>Stephen Lee</name></author><category term="Networks" /><category term="Networks" /><summary type="html">Audience</summary></entry><entry><title type="html">What Is Potential Outcomes</title><link href="http://localhost:4000/potential%20outcomes/2021/07/13/what-is-potential-outcomes.html" rel="alternate" type="text/html" title="What Is Potential Outcomes" /><published>2021-07-13T00:00:00-05:00</published><updated>2021-07-13T00:00:00-05:00</updated><id>http://localhost:4000/potential%20outcomes/2021/07/13/what-is-potential-outcomes</id><content type="html" xml:base="http://localhost:4000/potential%20outcomes/2021/07/13/what-is-potential-outcomes.html">&lt;h2 id=&quot;overview&quot;&gt;Overview&lt;/h2&gt;
 &lt;p&gt;Potential outcomes is a set of techniques and tools for estimating the likely results of a particular action. More specifically, potential outcomes provides a methodology for assessing the effect of a treatment (aka intervention) when certain assumptions are believed to be true. Notably, this approach is often applied to observational data in fields like economics, epidemiology, or sociology, where many experiments would be prohibitedly expensive or unethical.&lt;/p&gt;
 
 &lt;p&gt;While the randomized control trial is often considered a benchmark for causal inference,&lt;sup id=&quot;fnref:1&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; practitioners of potential outcomes argue that these methods can be naturally applied to other settings as well. Intuitively, the belief is that since we humans seem able to draw useful inference about the world without rigorous experiment (e.g. taking an asprine will help my headache because it helped last time), formalizing the process of observational based inference can yield valuable insight.&lt;/p&gt;
