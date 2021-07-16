@@ -21,9 +21,9 @@
 
   <link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Sparkling Correlation" />
   <!-- Begin Jekyll SEO tag v2.7.1 -->
-<title>Networks: Notation | Sparkling Correlation</title>
+<title>Networks (Part I) - Notation | Sparkling Correlation</title>
 <meta name="generator" content="Jekyll v3.9.0" />
-<meta property="og:title" content="Networks: Notation" />
+<meta property="og:title" content="Networks (Part I) - Notation" />
 <meta name="author" content="Stephen Lee" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="Audience" />
@@ -34,9 +34,9 @@
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2021-07-14T00:00:00-05:00" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="Networks: Notation" />
+<meta property="twitter:title" content="Networks (Part I) - Notation" />
 <script type="application/ld+json">
-{"author":{"@type":"Person","name":"Stephen Lee"},"url":"http://localhost:4000/networks/2021/07/14/networks-notation.html","headline":"Networks: Notation","dateModified":"2021-07-14T00:00:00-05:00","datePublished":"2021-07-14T00:00:00-05:00","description":"Audience","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/networks/2021/07/14/networks-notation.html"},"@context":"https://schema.org"}</script>
+{"author":{"@type":"Person","name":"Stephen Lee"},"url":"http://localhost:4000/networks/2021/07/14/networks-notation.html","headline":"Networks (Part I) - Notation","dateModified":"2021-07-14T00:00:00-05:00","datePublished":"2021-07-14T00:00:00-05:00","description":"Audience","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/networks/2021/07/14/networks-notation.html"},"@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
 
@@ -91,7 +91,7 @@
 <div class="post-body">
   <div class="row post-header">
     <div class="col">
-      <h1 class="post-title text-center">Networks: Notation</h1>
+      <h1 class="post-title text-center">Networks (Part I) - Notation</h1>
       <div class="post-meta text-center">
 
         
@@ -120,7 +120,7 @@
   
     <h3 class="toc-title">Table of Contents</h3>
   
-  <ul class="toc"><li><a href="#audience">Audience</a></li><li><a href="#overview">Overview</a></li><li><a href="#setup-and-definitions">Setup and Definitions</a><ul><li><a href="#nodes">Nodes</a></li><li><a href="#edges">Edges</a></li><li><a href="#graph-representations">Graph Representations</a><ul><li><a href="#matrix-notation">Matrix Notation</a></li></ul></li></ul></li></ul>
+  <ul class="toc"><li><a href="#audience">Audience</a></li><li><a href="#overview">Overview</a></li><li><a href="#setup-and-definitions">Setup and Definitions</a><ul><li><a href="#nodes">Nodes</a></li><li><a href="#edges">Edges</a></li><li><a href="#network-graphs">Network Graphs</a><ul><li><a href="#matrix-notation">Matrix Notation</a></li><li><a href="#other-notation">Other Notation</a><ul><li><a href="#adjacency-list">Adjacency List</a></li><li><a href="#list-of-edges">List of Edges</a></li></ul></li></ul></li></ul></li><li><a href="#conclusion">Conclusion</a></li></ul>
 
 </div>
 
@@ -136,7 +136,7 @@
 
 <h2 id="overview">Overview</h2>
 
-<p>Causal inference on network structures is notoriously difficult. This is due to the complicated web of interactions, and the resulting spillovers (i.e. externalities). For example, suppose you are studying a supply chain fulfilment network, and are wondering which facility or facilities, if upgraded, would improve the network’s capacity the most. Because of the interconnected routing decisions, the answer is not at all obvious.</p>
+<p>Causal inference on network structures is notoriously difficult. This is due to the complicated web of interactions, and the resulting spillovers (i.e. externalities) violate assumptions for the “potential outcomes” approach to inference (<a href="/potential%20outcomes/2021/07/13/what-is-potential-outcomes.html">click for more</a>). For example, suppose you are studying a supply chain fulfilment network, and are wondering which facility or facilities, if upgraded, would improve the network’s capacity the most. Because of the interconnected routing decisions, the answer is not at all obvious.</p>
 
 <p>This post will (hopefully) kick off a series of posts that explore how to measure and analyze network structures.</p>
 
@@ -156,7 +156,9 @@
 
 <p>Additionally, edges may be <strong>weighted</strong> or <strong>unweighted</strong>. An unweighted edge represents a simple binary connection, whereas a weighted edge may represent some magnitude of the relationship, for example, the amount of money traded between two banks.</p>
 
-<h3 id="graph-representations">Graph Representations</h3>
+<h3 id="network-graphs">Network Graphs</h3>
+
+<p>Given a network, there are multiple ways to express it, and which one you choose depends on your use case. For most of what follows, I will focus on the matrix representation, as it naturally lends itself to matrix algebra, which will be useful later on. However, where there are very few edges relative to the number of nodes (i.e. the network is <em>sparce</em>), a matrix will likely not be a very efficient way of storing or processing the information.</p>
 
 <h4 id="matrix-notation">Matrix Notation</h4>
 
@@ -184,6 +186,43 @@
     0 &amp; 0 &amp; 0 &amp; 0
 \end{bmatrix}\]
 
+<h4 id="other-notation">Other Notation</h4>
+
+<p>The following notations are often used in computational settings when implementing algorithms on graphs (e.g. depth-first search). Since that falls outside the scope of this post, I will only briefly mention their representations for my own future reference.</p>
+
+<h5 id="adjacency-list">Adjacency List</h5>
+
+<p>One popular form of describing graphs for computation problems is via “adjacency lists”. Here we represent each edge from node \(i\) to node \(j\) as a list (oftentime a linked list) that stems from the source node. For example, our original unweighted and undirected graph could have the following form:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># example with Python3 syntax
+</span><span class="n">graph</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> 
+    <span class="mi">2</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> 
+    <span class="mi">3</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> 
+    <span class="mi">4</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h5 id="list-of-edges">List of Edges</h5>
+
+<p>Similar to the adjacency list, another way of describing a network is simply as a list of edges, so to again use the first network above, this representation would be:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># note Python uses an exclusive stop value
+# in the "range" function
+</span><span class="n">nodes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span> 
+<span class="n">edges</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> 
+    <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> 
+    <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> 
+    <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">]</span>
+
+<span class="n">graph</span> <span class="o">=</span> <span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>I plan to use these definitions and notation in future posts.</p>
 
     </div>
   </div>
@@ -205,7 +244,7 @@
         <li class="list-group-item">
           <time datetime="2021-07-14T00:00:00-05:00">Jul 14, 2021</time> 
           &raquo;
-          <a class="card-link" href="/networks/2021/07/14/networks-notation.html">Networks: Notation</a>
+          <a class="card-link" href="/networks/2021/07/14/networks-notation.html">Networks (Part I) - Notation</a>
         </li>
       
         <li class="list-group-item">
