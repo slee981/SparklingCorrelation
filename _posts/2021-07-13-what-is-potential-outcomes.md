@@ -1,5 +1,5 @@
 ---
-title:
+title: What is the "Potential Outcomes" Framework
 author: Stephen Lee
 layout: post
 

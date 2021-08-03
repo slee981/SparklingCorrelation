@@ -17,7 +17,7 @@ Consider this post more of a "cheatsheet" rather than a tutorial. This draws hea
 
 ## Overview
 
-Causal inference on network structures is notoriously difficult. This is due to the complicated web of interactions, and the resulting spillovers (i.e. externalities) violate assumptions for the "potential outcomes" approach to inference ([click for more]({% post_url 2021-07-13-what-is-potential-outcomes %})). For example, suppose you are studying a supply chain fulfilment network, and are wondering which facility or facilities, if upgraded, would improve the network's capacity the most. Because of the interconnected routing decisions, the answer is not at all obvious. 
+Causal inference on network structures is notoriously difficult. This is due (at least in part) to the complicated web of interactions, and the resulting spillovers (i.e. externalities) violate assumptions for the "potential outcomes" approach to inference ([click for more]({% post_url 2021-07-13-what-is-potential-outcomes %})). For example, suppose you are studying a supply chain fulfilment network, and are wondering which facility or facilities, if upgraded, would improve the network's capacity the most. Because of the interconnected routing decisions, the answer is not at all obvious. 
 
 This post will (hopefully) kick off a series of posts that explore how to measure and analyze network structures. 
 
@@ -25,7 +25,7 @@ This post will (hopefully) kick off a series of posts that explore how to measur
 
 Consider the following network graph.
 
-<img src="{{ 'assets/images/network-simple.svg' | relative_url }}" alt="scatter" width="150"/>
+<img src="{{ 'assets/images/networks/network-simple.svg' | relative_url }}" alt="scatter" width="150"/>
 
 ### Nodes 
 
@@ -58,7 +58,7 @@ By convention, the edge connecting node 1 to node 4 is represented by a "1" in t
 
 The figure below shows a directed network with weighted eges. For example, we can imagine this as a group of friends settling a bet. 
 
-<img src="{{ 'assets/images/network-weighted-directed.svg' | relative_url }}" alt="scatter" width="150"/>
+<img src="{{ 'assets/images/networks/network-weighted-directed.svg' | relative_url }}" alt="scatter" width="150"/>
 
 Similar to the first graph, we can represent this in matrix form as follows. 
 
