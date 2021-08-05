@@ -120,7 +120,7 @@
   
     <h3 class="toc-title">Table of Contents</h3>
   
-  <ul class="toc"><li><a href="#audience">Audience</a></li><li><a href="#overview">Overview</a></li><li><a href="#definitions">Definitions</a><ul><li><a href="#paths">Paths</a></li><li><a href="#walk">Walk</a></li><li><a href="#cycles">Cycles</a></li><li><a href="#geodesic">Geodesic</a></li><li><a href="#degree">Degree</a></li><li><a href="#component">Component</a></li></ul></li></ul>
+  <ul class="toc"><li><a href="#audience">Audience</a></li><li><a href="#overview">Overview</a></li><li><a href="#definitions">Definitions</a><ul><li><a href="#paths">Paths</a></li><li><a href="#walk">Walk</a></li><li><a href="#cycles">Cycles</a></li><li><a href="#geodesic">Geodesic</a></li><li><a href="#degree">Degree</a></li><li><a href="#component">Component</a></li><li><a href="#conclusion">Conclusion</a></li></ul></li><li><a href="#resources">Resources</a></li></ul>
 
 </div>
 
@@ -159,6 +159,8 @@
 
 <p>Formally, a path in network \(g\) between nodes \(i\) and \(j\) is a sequence of edges \((n_1, n_2) \rightarrow (n_2, n_3) \rightarrow ... \rightarrow (n_{K-1}, n_K)\) where each edge \((n_{k-1}, n_k) \in g\), \(n_1 = i\) and \(n_K = j\), and each node \(n_1, ..., n_K\) are distinct. Note that the destination node along one edge becomes the starting node for the next edge.</p>
 
+<p>Using the graph in the figure above, there is only one possible path from node \(1\) to node \(3\), namely \(\{(1, 2) \rightarrow (2, 3)\}\).</p>
+
 <h3 id="walk">Walk</h3>
 
 <p>A walk is a path that doesn’t require distinct nodes i.e. an edge can lead to a node that has already been visited. In this sense, a walk will, in general, be less restrictive.</p>
@@ -176,6 +178,27 @@
 <p>The degree of a node is the number of links that involve the node. For directed graphs, this can be referenced as an in-degree and an out-degree, depending on if the edge ends with or starts from that node. In our example above, nodes \(1\) and \(2\) both have degree two (2), while nodes \(3\) and \(4\) have degree one (1).</p>
 
 <h3 id="component">Component</h3>
+
+<p>Finally, what if there is a node \(j\) that cannot be reached after starting from some other node \(i\). In this case, we say that those nodes are in separate components. In this case, the two components are not connected.</p>
+
+<p>More formally, a given network \(g\) is <strong>connected</strong> if there exists a path between any two nodes i.e. you can start at any node in the network and find a path to reach any other node in the network.</p>
+
+<p>Similarly, a component of a network \(g\) is a subnetwork \(g' \subseteq g\) where 1) \(g'\) is connected and 2) if a node \(i\) is in \(g'\) and the edge \((i, j) \in g\) (i.e. the edge exists in the larger graph) then the node \(j\) and edge \((i, j)\) must both also be in \(g'\). In other words, a component is a maximally connected subgraph. The graph below shows a network with two connected components.</p>
+
+<p><img src="/assets/images/networks/network-component.svg" alt="scatter" width="150" /></p>
+
+<h3 id="conclusion">Conclusion</h3>
+
+<p>This post focused on definitions that relate to navigating in a network i.e. how to think about moving from one node to another.</p>
+
+<p>One very natural extension are algorithms for actually navigating these graphs. This includes things like depth-first and breadth-first searches, among other. I suspect I’ll make a post about these at some point, but until then, I very much recommend <a href="http://algorithmics.lsi.upc.edu/docs/Dasgupta-Papadimitriou-Vazirani.pdf">this textbook</a>, which is currently available for free as a PDF online.</p>
+
+<h2 id="resources">Resources</h2>
+<ul>
+  <li>“Social and Economic Networks” by M. O. Jackson</li>
+  <li>“Algorithms” by S. Dasgupta, C. H. Papadimitriou, and U. V. Vazirani</li>
+</ul>
+
 
     </div>
   </div>
