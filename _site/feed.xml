@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="https://sparklingcorrelation.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://sparklingcorrelation.com/" rel="alternate" type="text/html" /><updated>2021-08-04T21:14:39-05:00</updated><id>https://sparklingcorrelation.com/feed.xml</id><title type="html">Sparkling Correlation</title><subtitle>A blog on data, prediction, and causal inference.</subtitle><entry><title type="html">Networks (Part II) - Navigation</title><link href="https://sparklingcorrelation.com/networks/2021/08/02/networks-navigation.html" rel="alternate" type="text/html" title="Networks (Part II) - Navigation" /><published>2021-08-02T00:00:00-05:00</published><updated>2021-08-02T00:00:00-05:00</updated><id>https://sparklingcorrelation.com/networks/2021/08/02/networks-navigation</id><content type="html" xml:base="https://sparklingcorrelation.com/networks/2021/08/02/networks-navigation.html">&lt;h2 id=&quot;audience&quot;&gt;Audience&lt;/h2&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="https://sparklingcorrelation.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://sparklingcorrelation.com/" rel="alternate" type="text/html" /><updated>2021-08-05T13:13:47-05:00</updated><id>https://sparklingcorrelation.com/feed.xml</id><title type="html">Sparkling Correlation</title><subtitle>A blog on data, prediction, and causal inference.</subtitle><entry><title type="html">Networks (Part II) - Navigation</title><link href="https://sparklingcorrelation.com/networks/2021/08/02/networks-navigation.html" rel="alternate" type="text/html" title="Networks (Part II) - Navigation" /><published>2021-08-02T00:00:00-05:00</published><updated>2021-08-02T00:00:00-05:00</updated><id>https://sparklingcorrelation.com/networks/2021/08/02/networks-navigation</id><content type="html" xml:base="https://sparklingcorrelation.com/networks/2021/08/02/networks-navigation.html">&lt;h2 id=&quot;audience&quot;&gt;Audience&lt;/h2&gt;
 
 &lt;p&gt;This is part II in a series about making economic inferences on network structures. The notation is covered in &lt;a href=&quot;/networks/2021/07/14/networks-notation.html&quot;&gt;part I&lt;/a&gt;.&lt;/p&gt;
 
@@ -45,11 +45,13 @@
 
 &lt;h3 id=&quot;degree&quot;&gt;Degree&lt;/h3&gt;
 
-&lt;p&gt;The &lt;strong&gt;degree&lt;/strong&gt; of a node is the number of links that involve the node. For directed graphs, this can be referenced as an in-degree and an out-degree, depending on if the edge ends with or starts from that node. In our example above, nodes \(1\) and \(2\) both have degree two (2), while nodes \(3\) and \(4\) have degree one (1).&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;degree&lt;/strong&gt; of a node is the number of links that involve the node. For directed graphs, this can be referenced as an in-degree and an out-degree, depending on if the edge ends with or starts from that node.&lt;/p&gt;
+
+&lt;p&gt;In our example above, nodes \(1\) and \(2\) both have degree two (2), while nodes \(3\) and \(4\) have degree one (1).&lt;/p&gt;
 
 &lt;h3 id=&quot;component&quot;&gt;Component&lt;/h3&gt;
 
-&lt;p&gt;Finally, what if there is a node \(j\) that cannot be reached after starting from some other node \(i\). In this case, we say that those nodes are in separate components. In this case, the two components are not connected.&lt;/p&gt;
+&lt;p&gt;Finally, what if there is a node \(j\) that cannot be reached after starting from some other node \(i\)? In this case, we say that those nodes are in separate components.&lt;/p&gt;
 
 &lt;p&gt;More formally, a given network \(g\) is &lt;strong&gt;connected&lt;/strong&gt; if there exists a path between any two nodes i.e. you can start at any node in the network and find a path to reach any other node in the network.&lt;/p&gt;
 
